@@ -136,3 +136,5 @@ mongoose
     error.httpStatusCode = 500;
     return next(error);
   });
+
+module.exports = app;
