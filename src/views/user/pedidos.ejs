@@ -1,0 +1,48 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+<body>
+    <main>
+        <%- include('../includes/navigation.ejs') %>
+        <%- include('../includes/acciones-usuario.ejs') %>
+        
+        <h5>Mis pedidos: </h5>
+
+        <% if (pedidos.length > 0) { %>
+                    
+            <% for (let pedido of pedidos) { %>
+                <div class="d-flex justify-content-center">
+                    <div class="mb-2 card <%= pedido.estado === 'cancelado' ? 'bg-danger-subtle' : '' %>" style="width: 20rem;">
+                        <h5 class="card-title text-center mt-2">Id pedido <%= pedido._id %></h5>
+                        <p>Fecha de pedido: <%= pedido.fechaPedido %></p>
+                        <p>Estado del pedido: <%= pedido.estado %></p>
+                        <p>Fecha de entrega: <%= pedido.fechaEntrega %></p>
+                        <div>
+                            <h5>Productos del pedido: </h5>
+                            <% for (let prod of pedido.productos) { %>
+                                <%= prod.producto.nombre %> (<%= prod.cantidad %>)
+                            <% } %> 
+                        </div>
+                        <p>Precio total: <%= pedido.precioTotal %></p>
+                        <a href="/pedidos/<%= pedido._id %>">Comprobante</a>
+                        <form action="/cancelar-pedido" method="POST">
+                            <input type="hidden" value="<%= pedido._id %>" name="idPedido">
+                            <% if (pedido.estado !== 'cancelado') { %>
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button type="submit" class="btn btn-danger mt-2 w-100">Cancelar pedido</button>
+                            <% } %>
+                        </form>
+                    </div>
+                </div>
+                
+            <% } %>               
+        
+        <% } else { %>
+            <h1>No hay pedidos</h1>
+        <% } %>
+
+
+
+    </main>
+
+<%- include('../includes/end.ejs') %>

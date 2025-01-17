@@ -1,0 +1,66 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <div class="mx-4">
+        <div class="row">
+            <aside class="col-1">
+                <%- include('../includes/filtros.ejs') %>
+            </aside>
+            <main class="col-11 d-flex flex-column align-items-end">
+                    
+                <%- include('../includes/ordenar.ejs') %>
+    
+                <div class="container">
+                    <% if (prods.length > 0) { %>
+                        <div class="row m-3">
+                            <% for (let producto of prods) { %>
+                                <div class="col-md-4 mb-2">
+                                    <div class="card" style="width: 18rem;">
+                                        <a href="/productos/<%= producto._id %>">
+                                            <img src="/<%=producto.urlImagen %>" class="card-img-top" alt="<%= producto.nombre %>">
+                                        </a>
+                                        <div class="card-body">
+                                            
+                                            <h5 class="card-title text-center mt-2"><%= producto.nombre %></h5>
+                                            <h5 class="card-title text-center mt-2 <%= (producto.descuento.valor !== 0 && producto.descuento.fechaExpiracion > new Date() )? 'text-decoration-line-through' : '' %>"><%= producto.precio.toFixed(2) %></h5>
+                                            <% if (producto.descuento.valor !== 0 && producto.descuento.fechaExpiracion > new Date()) { %>
+                                                <h5 class="card-title text-center mt-2"><%= producto.precio - (producto.precio*producto.descuento.valor)/100 %></h5>
+                                            <% } %>
+                                            <form method="POST" action="/agregar-lista-deseos">
+                                                <input type="hidden" name="idProducto" value="<%= producto._id %>">
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <button>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            
+                                            <% if (autenticado) { %>
+                                                <%- include('../includes/agregar-al-carrito.ejs', {producto: producto}) %>
+                                            <% } %>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>               
+                        </div>
+                        <%- include('../includes/pagination.ejs') %>
+                    <% } else { %>
+                        <h1>No hay productos</h1>
+                    <% } %>
+    
+                </div>    
+        
+            </main>
+        </div>
+    </div>
+
+       
+
+        
+<%- include('../includes/end.ejs') %>

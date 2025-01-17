@@ -1,0 +1,48 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+<body>
+    <main>
+        <%- include('../includes/navigation.ejs') %>
+        <%- include('../includes/acciones-usuario.ejs') %>
+        
+        <h5>Mi lista de deseos: </h5>
+
+        <% if (productosEnListaDeseos.length > 0) { %>
+                    
+            <% for (let producto of productosEnListaDeseos) { %>
+                <div class="mb-2 card w-25">
+                    <form action="/eliminar-prod-lista-deseos" method="post">
+                        <input type="hidden" name="idProducto" value="<%= producto.idProducto._id %>">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <a href="/productos/<%= producto.idProducto._id %>">
+                        <img src="/<%=producto.idProducto.urlImagen %>" class="card-img-top" alt="<%= producto.idProducto.nombre %>">
+                    </a>
+    
+                    <h5><%= producto.idProducto.nombre %></h5>
+                    <h5 class="card-title text-center mt-2 <%= (producto.idProducto.descuento.valor !== 0 && producto.idProducto.descuento.fechaExpiracion > new Date()) ? 'text-decoration-line-through' : '' %>"><%= producto.idProducto.precio.toFixed(2) %></h5>
+                    <% if (producto.idProducto.descuento.valor !== 0 && producto.idProducto.descuento.fechaExpiracion > new Date()) { %>
+                        <h5 class="card-title text-center mt-2"><%= producto.idProducto.precio - (producto.idProducto.precio*producto.idProducto.descuento.valor)/100 %></h5>
+                        <p>Descuento disponible hasta: <%= producto.idProducto.descuento.fechaExpiracion %></p>
+                    <% } %>
+                    <p><%= producto.idProducto.descripcion %></p>
+                </div>
+
+            <% } %>
+        
+        <% } else { %>
+            <span>No hay productos en la lista de deseos</span>
+        <% } %>
+
+
+
+    </main>
+
+<%- include('../includes/end.ejs') %>

@@ -1,0 +1,44 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="container mt-4">
+
+        <form action="/<% if (modoEdicion) { %>editar-publicacion<% } else { %>crear-publicacion<% } %>" method="POST" class="p-4 border rounded">
+            <!-- Campo Nombre -->
+            <div class="mb-3">
+                <label for="titulo" class="form-label">Titulo</label>
+                <input type="text" class="form-control" name="titulo" id="titulo" value="<% if (modoEdicion) { %><%= publicacion.titulo %><% } %>">
+            </div>
+            
+            <!-- Campo URL Imagen -->
+            <div class="mb-3">
+                <label for="urlImagen" class="form-label">URL Imagen</label>
+                <input type="text" class="form-control" name="urlImagen" id="urlImagen" value="<% if (modoEdicion) { %><%= publicacion.urlImagen %><% } %>">
+            </div>
+
+            <!-- Campo Descripción -->
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" name="descripcion" id="descripcion" rows="5"><% if (modoEdicion) { %><%= publicacion.descripcion %><% } %></textarea>
+            </div>
+    
+            <!-- Campo oculto para el ID si está en modo edición -->
+            <% if (modoEdicion) { %>
+                <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
+            <% } %>
+    
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <!-- Botón de Envío -->
+            <button class="btn btn-primary" type="submit">
+                <% if (modoEdicion) { %>Actualizar Publicacion<% } else { %>Crear Publicacion<% } %>
+            </button>
+        </form>
+
+    </main>
+    
+
+<%- include('../includes/end.ejs') %>

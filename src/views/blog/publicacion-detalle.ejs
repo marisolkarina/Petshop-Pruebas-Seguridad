@@ -1,0 +1,64 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    
+    <h1 class="text-center bg-dark p-3 text-white">Blog</h1>
+    <main class="container">
+            
+        <div class="card w-75 m-auto">
+            
+            <img src="<%=publicacion.urlImagen %>" class="card-img-top" alt="<%= publicacion.titulo %>">
+
+            <div class="card-body">
+                <h5 class="text-center mt-2"><%= publicacion.titulo %></h5>
+                <p class="card-title text-center mt-2">Publicado el <%= new Date(publicacion.fechaPublicacion).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) %></p>
+                <p>Autor: <%= publicacion.autor.nombre %></p>
+                <p class= mt-2"><%= publicacion.descripcion %></p>
+            </div>
+            
+            <% if (autenticado && (publicacion.autor.idUsuario.toString() === usuario._id.toString() || usuario.role === 'admin')) { %>
+                <div class="d-flex justify-content-between">
+                    <a href="/editar-publicacion/<%= publicacion._id %>" class="btn btn-warning w-50 mx-1">Editar</a>
+                    <form action="/eliminar-publicacion" method="POST" class="w-50 mx-1">
+                        <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" >
+                        <button class="btn btn-danger w-100" type="submit">Eliminar</button>
+                    </form>
+                </div>
+            <% } %>
+
+        </div>
+
+        <% if (comentarios.length > 0) { %>
+            <h5 class="text-center">Comentarios</h5>
+            <% for (let comment of comentarios) { %>
+            <div class="card w-75 m-auto">
+                <div class="d-flex ">
+                    <p class="text-center m-3"><%= comment.usuario.nombre %>: </p>
+                    <p class="text-center m-3"><%= comment.contenido %></p>
+                    <p class="text-center m-3"><%= new Date(comment.fechaComentario).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'long' }) %></p>
+                    
+                    <% if (autenticado && (comment.usuario.idUsuario.toString() === usuario._id.toString() || usuario.role === 'admin')) { %>
+                        <form action="/blog/eliminar-comentario" method="POST">
+                            <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
+                            <input type="hidden" value="<%= comment.fechaComentario %>" name="fechaComentario">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn-link">Eliminar</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+
+            <% } %>
+        <% } else { %>
+            <h5 class="text-center">No hay comentarios</h5>
+        <% } %>
+        <% if (autenticado) { %>
+            <%- include('../includes/comentar-publicacion.ejs', {nombreUsuario: usuario.nombre}) %>
+        <% } %>
+    </main>
+        
+    <%- include('../includes/end.ejs') %>

@@ -1,0 +1,23 @@
+.btn-verde {
+    background-color: #8bb09c;
+    color: white;
+}
+
+.bg-orange {
+    background-color: #d48166;
+}
+
+.form-control.invalid {
+    border-color: red;
+}
+
+.user-message--error {
+    background-color: #f8d7da; /* Rojo claro para fondo de error */
+    border: 1px solid #f5c6cb; /* Borde rojo claro */
+    color: #721c24; /* Texto rojo oscuro */
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+}

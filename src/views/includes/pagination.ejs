@@ -1,0 +1,27 @@
+<nav class="d-flex justify-content-center">
+    <ul class="pagination">
+        <% if (paginaActual !== 1 && paginaAnterior !== 1) { %>
+            <li class="page-item">
+                <a class="page-link" href="?pagina=1">Primera: 1</a>
+            </li>
+        <% } %>
+        <% if (tienePaginaAnterior) { %>
+            <li class="page-item">
+                <a class="page-link" href="?pagina=<%= paginaAnterior %>"><%= paginaAnterior %></a>
+            </li>
+        <% } %>
+        <li class="page-item active" aria-current="page">
+            <a class="page-link" href="?pagina=<%= paginaActual %>"><%= paginaActual %></a>
+        </li>
+        <% if (tienePaginaSiguiente) { %>
+            <li class="page-item">
+                <a class="page-link" href="?pagina=<%= paginaSiguiente %>"><%= paginaSiguiente %></a>
+            </li>
+        <% } %>
+        <% if (ultimaPagina !== paginaActual && paginaSiguiente !== ultimaPagina) { %>
+            <li class="page-item">
+                <a class="page-link" href="?pagina=<%= ultimaPagina %>">Última: <%= ultimaPagina %></a>
+            </li>
+        <% } %>
+    </ul>
+</nav>

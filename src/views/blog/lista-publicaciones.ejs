@@ -1,0 +1,56 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <h1 class="text-center bg-dark p-3 text-white">Blog</h1>
+        <div class="container">
+            <% if (autenticado) { %>
+                <a href="/crear-publicacion" class="btn btn-verde w-25 my-4">Crear Publicacion</a>
+            <% } %>
+        
+        <% if (publicaciones.length > 0) { %>
+            <div class="row m-3">
+                <% for (let publicacion of publicaciones) { %>
+                    <div class="col-6 mb-2">
+                        <div class="card">
+                            
+                            <a href="/blog/<%= publicacion._id %>">
+                                <img src="<%=publicacion.urlImagen %>" class="card-img-top" alt="<%= publicacion.titulo %>">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="text-center mt-2"><%= publicacion.titulo %></h5>
+                                <input type="hidden" name="idPublicacion" value="<%= publicacion._id %>">
+                                <p class="card-title text-center mt-2">Publicado el <%= new Date(publicacion.fechaPublicacion).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) %></p>
+                                <p>Autor: <%= publicacion.autor.nombre %></p>
+                                <p class= mt-2"><%= publicacion.descripcionCorta %></p>
+                            </div>
+
+                            <a href="/blog/<%= publicacion._id %>" class="text-center mb-3 text-decoration-none">Seguir leyendo</a>
+                            
+                            <% if (autenticado && (publicacion.autor.idUsuario.toString() === usuario._id.toString() || usuario.role === 'admin')) { %>
+                                <div class="d-flex justify-content-between">
+                                    <a href="/editar-publicacion/<%= publicacion._id %>" class="btn btn-warning w-50 mx-1">Editar</a>
+                                    <form action="/eliminar-publicacion" method="POST" class="w-50 mx-1">
+                                        <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" >
+                                        <button class="btn btn-danger w-100" type="submit">Eliminar</button>
+                                    </form>
+                                </div>
+                            <% } %>
+                            
+                        </div>
+                    </div>
+
+                <% } %>               
+            </div>
+            <%- include('../includes/pagination.ejs') %>
+        <% } else { %>
+            <h1>No hay publicaciones</h1>
+        <% } %>
+        </div>
+    </main>
+    
+<%- include('../includes/end.ejs') %>

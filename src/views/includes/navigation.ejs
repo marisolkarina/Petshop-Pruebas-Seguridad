@@ -1,0 +1,57 @@
+<header class="main-header">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid d-flex flex-row-reverse">
+            <div class="navbar-nav">
+                <a class="nav-link <%= path === '/' ? 'active' : 'inactive' %>" href="/">Inicio</a>
+                <a class="nav-link <%= path === '/productos' ? 'active' : 'inactive' %>" href="/productos">Productos</a>
+                <a class="nav-link" href="#">Sobre nosotros</a>
+                <a class="nav-link" href="/blog">Blog</a>
+
+            </div>
+        </div>
+    </nav>
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand">PetShop</a>
+            
+            <form class="d-flex" role="search" action="/productos" method="POST">
+                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" name="textoIngresado">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn btn-verde" type="submit">Buscar</button>
+            </form>
+        </div>
+        <% if (!autenticado) { %>
+            <a class="btn btn-success" href="/login">Login</a>
+        <% } else { %>
+            <form action="/salir" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-secondary">Salir</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid bg-orange">
+            <div class="navbar-nav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <a class="nav-link text-white" href="/productos/perro">Perro</a>
+                    <a class="nav-link text-white" href="/productos/gato">Gato</a>
+                    <a class="nav-link text-white" href="/productos/conejo">Conejo</a>
+                    <a class="nav-link text-white" href="/productos/hamster">Hamster</a>
+                    <a class="nav-link text-white" href="/promociones">Promociones</a>
+                    <% if (autenticado) { %>
+                        <a class="nav-link text-white" href="/carrito">Carrito</a>
+                        <a class="nav-link text-white" href="/detalles-cuenta">Mi Cuenta</a>
+                    <% } %>
+                        
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    
+</header>

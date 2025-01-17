@@ -1,0 +1,124 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+            <main class="container mt-4">
+                <% if (mensajeError) { %>
+                    <div class="user-message user-message--error">
+                        <%= mensajeError %>
+                    </div>
+                <% } %>
+                        
+                <form
+                    enctype="multipart/form-data"
+                    action="/admin/<% if (modoEdicion) { %>editar-producto<% } else { %>crear-producto<% } %>"
+                    method="POST" class="p-4 border rounded">
+                    <!-- Campo Nombre -->
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input
+                            class="form-control <%= validationErrors.find(e => e.path === 'nombre') ? 'border-danger' : '' %>"
+                            type="text" name="nombre" id="nombre"
+                            value="<% if (modoEdicion || tieneError) { %><%= producto.nombre %><% } %>">
+                    </div>
+
+                    <!-- Campo URL Imagen -->
+                    <div class="mb-3">
+                        <label for="imagen" class="form-label">Imagen</label>
+                        <input type="file" name="imagen" id="imagen" class="btn btn-outline-warning" 
+                        value="<% if (modoEdicion || tieneError) { %><%= producto.urlImagen %><% } %>">
+                        
+                    </div>
+
+                    <!-- Campo Precio -->
+                    <div class="mb-3">
+                        <label for="precio" class="form-label">Precio</label>
+                        <input
+                            class="form-control <%= validationErrors.find(e => e.path === 'precio') ? 'border-danger' : '' %>"
+                            type="number" name="precio" id="precio" step="0.01"
+                            value="<% if (modoEdicion || tieneError) { %><%= producto.precio.toFixed(2) %><% } %>">
+                    </div>
+
+                    <!-- Campo Stock -->
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input
+                            class="form-control <%= validationErrors.find(e => e.path === 'stock') ? 'border-danger' : '' %>"
+                            type="number" name="stock" id="stock" step="1"
+                            value="<% if (modoEdicion || tieneError) { %><%= producto.stock %><% } %>">
+                    </div>
+
+                    <!-- Campo Descuento -->
+                    <div class="mb-3">
+                        <label for="descuento" class="form-label">Descuento (en %)</label>
+                        <input
+                            class="form-control"
+                            type="number" name="descuento" id="descuento" step="0.01"
+                            value="<% if (modoEdicion || tieneError) { %><%= producto.descuento.valor %><% } %>">
+                    </div>
+
+                    <!-- Campo fecha de expiracion de descuento -->
+                    <div class="mb-3">
+                        <label for="fechaExpiracion" class="form-label">Fecha de expiracion descuento</label>
+                        <input
+                            class="form-control"
+                            type="datetime-local" name="fechaExpiracion" id="fechaExpiracion"
+                            value="<% if (modoEdicion || tieneError) { %><%= producto.descuento.fechaExpiracion %><% } %>">
+                    </div>
+
+                    <!-- Campo Categoria -->
+                    <div class="mb-3">
+                        <label for="categoria" class="form-label">Categoría</label>
+
+                        <select name="categoria" id="categoria" class="form-select <%= validationErrors.find(e => e.path === 'categoria') ? 'border-danger' : '' %>">
+                            <option value="" selected>Elija una categoria</option>
+                            <option value="perro" <% if (modoEdicion && producto.categoria === 'perro' || tieneError) { %>selected<% } %>>Perro</option>
+                            <option value="gato" <% if (modoEdicion && producto.categoria === 'gato' || tieneError) { %>selected<% } %>>Gato</option>
+                            <option value="conejo" <% if (modoEdicion && producto.categoria === 'conejo' || tieneError) { %>selected<% } %>>Conejo</option>
+                            <option value="hamster" <% if (modoEdicion && producto.categoria === 'hamster' || tieneError) { %>selected<% } %>>Hamster</option>
+                        </select>
+                    </div>
+
+                    <!-- Campo Color -->
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+
+                        <select name="color" id="color" class="form-select <%= validationErrors.find(e => e.path === 'color') ? 'border-danger' : '' %>">
+                            <option value="" selected>Elija un color</option>
+                            <option value="rojo" <% if (modoEdicion && producto.color === 'rojo' || tieneError) { %>selected<% } %>>Rojo</option>
+                            <option value="azul" <% if (modoEdicion && producto.color === 'azul' || tieneError) { %>selected<% } %>>Azul</option>
+                            <option value="celeste" <% if (modoEdicion && producto.color === 'celeste' || tieneError) { %>selected<% } %>>Celeste</option>
+                            <option value="blanco" <% if (modoEdicion && producto.color === 'blanco' || tieneError) { %>selected<% } %>>Blanco</option>
+                            <option value="marron" <% if (modoEdicion && producto.color === 'marron' || tieneError) { %>selected<% } %>>Marrón</option>
+                        </select>
+                    </div>
+
+                    <!-- Campo Descripción -->
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea
+                            class="form-control <%= validationErrors.find(e => e.path === 'descripcion') ? 'border-danger' : '' %>"
+                            name="descripcion" id="descripcion"
+                            rows="5"><%= modoEdicion || tieneError ? producto.descripcion : '' %></textarea>
+                    </div>
+
+
+                    <!-- Campo oculto para el ID si está en modo edición -->
+                    <% if (modoEdicion) { %>
+                        <input type="hidden" value="<%= producto._id %>" name="idProducto">
+                    <% } %>
+
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <!-- Botón de Envío -->
+                            <button class="btn btn-primary" type="submit">
+                                <% if (modoEdicion) { %>Actualizar Producto<% } else { %>Crear Producto<% } %>
+                            </button>
+                </form>
+            </main>
+
+
+            <%- include('../includes/end.ejs') %>

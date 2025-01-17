@@ -1,0 +1,51 @@
+<%- include('includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .error-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .error-image {
+            width: 200px;
+            margin: 0 auto;
+            animation: wiggle 1s infinite;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        .error-text {
+            font-family: 'Arial', sans-serif;
+            color: #555;
+            margin-top: 20px;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <%- include('includes/navigation.ejs') %>
+    <div class="error-container">
+        <img 
+            src="https://media.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif"
+            alt="Perrito triste" 
+            class="error-image"
+        >
+        <h1 class="error-text">¡Ups! Algo salió mal (Error 500)</h1>
+        <p class="error-text">Parece que nuestro servidor está teniendo un mal día. Estamos trabajando en ello.</p>
+        <a href="/" class="back-button">Volver al inicio</a>
+    </div>
+<%- include('includes/end.ejs') %>
+

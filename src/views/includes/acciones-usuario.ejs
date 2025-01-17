@@ -1,0 +1,9 @@
+<h4>Mi Cuenta</h4>
+<ul class="list-unstyled list-group my-5 w-25">
+    <li><a class="list-group-item list-group-item-action" href="/detalles-cuenta">Detalles de mi cuenta</a></li>
+    <li><a class="list-group-item list-group-item-action" href="/pedidos">Mis Pedidos</a></li>
+    <li><a class="list-group-item list-group-item-action" href="/lista-deseos">Lista de deseos</a></li>
+    <% if (usuario.role === 'admin') { %>
+        <li><a class="list-group-item list-group-item-action" href="/admin/productos">Admin</a></li>
+    <% } %>
+</ul>

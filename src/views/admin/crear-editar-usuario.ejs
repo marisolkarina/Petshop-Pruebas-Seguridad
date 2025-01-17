@@ -1,0 +1,74 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="container mt-4">
+        <form action="/admin/<% if (modoEdicion) { %>editar-usuario<% } else { %>crear-usuario<% } %>" method="POST" class="p-4 border rounded">
+            
+            <% if (mensajeError) { %>
+                <div class="alert alert-danger"><%= mensajeError %></div>
+            <% } %>
+
+            <!-- Campo Nombre -->
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" 
+                    class="form-control <%= validationErrors && validationErrors.find(e => e.path === 'nombre') ? 'border-danger' : '' %>" 
+                    name="nombre" id="nombre" value="<% if (modoEdicion) { %><%= usuario.nombre %><% } %>">
+            </div>
+
+            <!-- Campo DNI -->
+            <div class="mb-3">
+                <label for="dni" class="form-label">DNI</label>
+                <input type="text" name="dni" 
+                    class="form-control <%= validationErrors && validationErrors.find(e => e.path === 'dni') ? 'border-danger' : '' %>" 
+                    id="dni" value="<% if (modoEdicion) { %><%= usuario.dni %><% } %>" required>
+            </div>
+            
+            <!-- Campo Tipo de Usuario -->
+            <div class="mb-3">
+                <label for="role" class="form-label">Tipo de usuario</label>
+                <select name="role" id="role" class="form-select">
+                    <option value="admin" <% if (modoEdicion && usuario.role === 'admin') { %>selected<% } %>>Admin</option>
+                    <option value="user" <% if (modoEdicion && usuario.role === 'user') { %>selected<% } %>>User</option>
+                </select>
+            </div>
+    
+            <!-- Campo Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" 
+                    class="form-control <%= validationErrors && validationErrors.find(e => e.path === 'email') ? 'border-danger' : '' %>"
+                    name="email" id="email" 
+                    value="<% if (modoEdicion) { %><%= usuario.email %><% } %>">
+            </div>
+    
+            <div class="mb-3">
+                <label for="password" class="form-label">Password <% if (modoEdicion) { %>encriptada<% } %></label>
+                <% if (!modoEdicion) { %>
+                    <div class="form-text">Min: 8 caracteres (incluir letra mayúscula y minúscula, número y caracter especial)</div>
+                <% } %>
+                <input
+                    class="form-control <%= validationErrors.find(e => e.path === 'password') ? 'border-danger' : '' %>"
+                    type="password" name="password" id="password" <% if (modoEdicion) { %> value="<%= usuario.password %>" readonly<% } %>>
+            </div>
+            
+            <!-- Campo oculto para el ID si está en modo edición -->
+            <% if (modoEdicion) { %>
+                <input type="hidden" value="<%= usuario._id %>" name="idUsuario">
+            <% } %>
+            
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <!-- Botón de Envío -->
+            <button class="btn btn-primary" type="submit">
+                <% if (modoEdicion) { %>Actualizar Usuario<% } else { %>Crear Usuario<% } %>
+            </button>
+        </form>
+
+    </main>
+    
+
+<%- include('../includes/end.ejs') %>

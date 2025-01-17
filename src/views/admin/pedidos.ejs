@@ -1,0 +1,56 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+<body>
+    <main>
+        <%- include('../includes/navigation.ejs') %>
+        <%- include('../includes/acciones.ejs') %>
+        
+        <h1>Lista de pedidos</h1>
+
+        <% if (pedidos.length > 0){ %>
+            
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID pedido</th>
+                        <th>Detalles</th>
+                        <th>Cliente</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>  
+                    <% for (let pedido of pedidos) { %>
+                        <tr>
+                            <td> <%= pedido.id %> </td>
+                            <td>
+                                <div class="mb-2">
+                                    <% for (let prod of pedido.productos) { %>
+                                        <%= prod.producto.nombre %> (<%= prod.cantidad %>)
+                                    <% } %> 
+                                </div>
+                                <p>Precio total: <%= pedido.precioTotal %></p>
+                                <p>Fecha de pedido: <%= pedido.fechaPedido %></p>
+                                <p>Fecha de entrega: <%= pedido.fechaEntrega %></p>
+                            </td>
+                            <td> <%= pedido.usuario.nombre %> </td>
+                            <td> <%= pedido.estado %> </td>
+                            <td>
+                                <a href="/admin/editar-pedido/<%= pedido._id %>" class="btn btn-warning mb-2">Editar pedido</a>
+                            </td>
+                            
+                        </tr>
+                        
+                    <% } %>               
+                </tbody>
+            </table>
+        <% } else { %>
+            <h1>No hay pedidos</h1>
+        <% } %>
+
+
+    </main>
+
+<%- include('../includes/end.ejs') %>

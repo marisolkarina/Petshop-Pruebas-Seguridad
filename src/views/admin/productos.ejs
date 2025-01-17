@@ -1,0 +1,54 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/producto.css">
+<link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/acciones.ejs') %>
+
+    <main>
+        <div class="container">
+            <a href="/admin/crear-producto" class="btn btn-verde w-25 my-4">Crear producto</a>
+
+            <% if (prods.length > 0) { %>
+                <% for (let producto of prods) { %>
+                    <div class="d-flex align-items-center">
+                        <div class="col-4 mb-2 card" style="width: 18rem;">
+                            <img src="/<%= producto.urlImagen %>" class="card-img-top" alt="<%= producto.nombre %>">
+                            <h5 class="card-title text-center mt-2"><%= producto.nombre %></h5>
+                            <h5 class="card-title text-center mt-2"><%= producto.precio.toFixed(2) %></h5>
+                            <% if (producto.descuento.valor !== 0) { %>
+                                <p class="card-title text-center mt-2">Descuento: - <%= producto.descuento.valor %> % </p>
+                                <h5 class="card-title text-center mt-2"><%= producto.precio - (producto.precio*producto.descuento.valor)/100 %></h5>
+                                <p>Fecha expiracion? <%= producto.descuento.fechaExpiracion %>...</p>
+                            <% } %>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-center">Descripcion</h5>
+                            <p class="product__description"><%= producto.descripcion %></p>
+                            <p>Categoria: <%= producto.categoria %></p>
+                            <p>Color: <%= producto.color %></p>
+                            <p>Stock: <%= producto.stock %></p>
+                        </div>
+                        <% if (autenticado) { %>
+                            <div class="col-2">
+                                <a href="/admin/editar-producto/<%= producto._id %>" class="btn btn-warning w-50">Editar</a>
+                                <form action="/admin/eliminar-producto" method="POST">
+                                    <input type="hidden" value="<%= producto._id %>" name="idProducto">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" >
+                                    <button class="btn btn-danger w-50 mt-2" type="submit">Eliminar</button>
+                                </form>
+                            </div>
+                        <% } else { %>
+                            <h1>No estás autenticado</h1>
+                        <% } %>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <h1>No hay productos</h1>
+            <% } %>
+        </div>
+    </main>
+
+    <%- include('../includes/end.ejs') %>

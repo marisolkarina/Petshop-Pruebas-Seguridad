@@ -1,0 +1,9 @@
+<form action="/blog/comentar" method="POST" class="m-2">
+    <div class="d-flex align-items-end justify-content-evenly">
+        <p><%= nombreUsuario %></p>
+        <textarea class="form-control w-50" placeholder="Deja un comentario aquí" name="comentario" id="comentario" style="height: 80px"></textarea>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
+        <button class="btn btn-verde" type="submit">Enviar</button>
+    </div>
+</form>

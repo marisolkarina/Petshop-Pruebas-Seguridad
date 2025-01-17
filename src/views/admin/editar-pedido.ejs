@@ -1,0 +1,55 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="stylesheet" href="/css/producto.css">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="container mt-4">
+        
+        <form action="/admin/editar-pedido" method="POST" class="p-4 border rounded">
+            <!-- Campo Productos -->
+            <% pedido.productos.forEach((prod, index) => {%>
+                <div class="mb-3">
+                    <label for="nombreProducto" class="form-label">Producto</label>
+                    <p><%= prod.producto.nombre %></p>
+                    <label for="cantidadProducto" class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" name="cantidadProducto<%= index %>" id="cantidadProducto" value="<%= prod.cantidad %>">
+                </div>
+            <% }) %>
+
+            <label for="precioTotal" class="form-label">Precio total</label>
+            <p><%= pedido.precioTotal %></p>
+            <input type="hidden" value="<%= pedido.precioTotal %>" name="precioTotal">
+            
+            <!-- Campo estado del pedido -->
+            <div>
+                <label for="estado" class="form-label">Estado</label>
+                <select name="estado" id="estado" class="form-select">
+                    <option value="pendiente" <% if (pedido.estado === 'pendiente') { %>selected<% } %>>pendiente</option>
+                    <option value="enviado" <% if (pedido.estado === 'enviado') { %>selected<% } %>>enviado</option>
+                    <option value="entregado" <% if (pedido.estado === 'entregado') { %>selected<% } %>>entregado</option>
+                    <option value="cancelado" <% if (pedido.estado === 'cancelado') { %>selected<% } %>>cancelado</option>
+                </select>
+            </div>
+
+            <!-- Campo Fecha de entrega -->
+            <div class="mb-3">
+                <label for="fechaEntrega" class="form-label">Fecha de entrega</label>
+                <input type="datetime" class="form-control" name="fechaEntrega" id="fechaEntrega" value="<%= pedido.fechaEntrega %>">
+            </div>
+            
+            <input type="hidden" value="<%= pedido._id %>" name="idPedido">
+            
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <!-- Botón de Envío -->
+            <button class="btn btn-primary" type="submit">
+                Guardar cambios
+            </button>
+           
+        </form>
+        
+    </main>
+    
+
+<%- include('../includes/end.ejs') %>
