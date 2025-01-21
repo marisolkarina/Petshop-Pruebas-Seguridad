@@ -122,7 +122,7 @@ mongoose
       if (!usuario) {
         const usuario = new Usuario({
           nombre: 'Marisol Pachauri',
-          email: 'mpachaurir@uni.pe', // espinozaromero1999@gmail.com
+          email: 'marisolkarinapachauririvera@gmail.com', // espinozaromero1999@gmail.com
           password: 'Admin01!',   // Usuario01!
           role: 'admin',
           carrito: {

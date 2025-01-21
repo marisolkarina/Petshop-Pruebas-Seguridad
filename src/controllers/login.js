@@ -19,19 +19,7 @@ const transporter = nodemailer.createTransport(
 
 // LOGIN
 
-// Controlador para mostrar la página de login
-exports.getLogin = (req, res,next) => {
-    res.render('auth/login', {
-        titulo: 'Iniciar sesión',
-        path: '/login',
-        mensajeError: '',
-        validationErrors: [], // Asegura que validationErrors esté definido
-        datosAnteriores: {},  // Define datosAnteriores como un objeto vacío si no hay datos previos
-        autenticado: false
-    });
-};
-
-
+//      localhost:3000/login
 // Controlador para procesar el inicio de sesión
 exports.postLogin = (req, res) => {
     const { email, password } = req.body;
@@ -39,13 +27,6 @@ exports.postLogin = (req, res) => {
     // Captura los errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        // return res.status(422).render('auth/login', {
-        //     titulo: 'Login',
-        //     path: '/login',
-        //     mensajeError: errors.array()[0].msg, // Mostrar el primer error
-        //     datosAnteriores: { email, password },
-        //     validationErrors: errors.array() // Pasar todos los errores para mostrar en la vista
-        // });
         return res.status(422).json({
             message: errors.array()[0].msg
         });
@@ -54,13 +35,6 @@ exports.postLogin = (req, res) => {
     Usuario.findOne({ email: email })
         .then((usuario) => {
             if (!usuario) {
-                // return res.status(422).render('auth/login', {
-                //     titulo: 'Login',
-                //     path: '/login',
-                //     mensajeError: 'Email o contraseña incorrecto.',
-                //     datosAnteriores: { email, password },
-                //     validationErrors: []
-                // });
                 return res.status(422).json({
                     message: 'Email o contraseña invalido'
                 });
@@ -69,13 +43,6 @@ exports.postLogin = (req, res) => {
             bcrypt.compare(password, usuario.password)
                 .then((doMatch) => {
                     if (!doMatch) {
-                        // return res.status(422).render('auth/login', {
-                        //     titulo: 'Login',
-                        //     path: '/login',
-                        //     mensajeError: 'Email o contraseña incorrecto.',
-                        //     datosAnteriores: { email, password },
-                        //     validationErrors: []
-                        // });
                         return res.status(422).json({
                             message: 'Email o contraseña invalido'
                         });
@@ -85,9 +52,8 @@ exports.postLogin = (req, res) => {
                     req.session.usuario = usuario;
                     req.session.save((err) => {
                         if (err) console.log('Error al guardar la sesión:', err);
-                        // res.redirect('/detalles-cuenta');
                     });
-                    res.status(200).json({message: 'login exitoso'});
+                    res.status(200).json({message: 'Login exitoso'});
                 });
         })
         .catch((err) => {
@@ -96,38 +62,21 @@ exports.postLogin = (req, res) => {
 };
 
 
-// Controlador para renderizar la página de recuperación de contraseña
-exports.getRecuperarContrasena = (req, res) => {
-    res.render('auth/recuperar-contrasena', {
-        titulo: 'Recuperar Contraseña',
-        path: '/recuperar-contrasena',
-        mensajeError: null,
-        estilo: null,
-        autenticado: false
-    });
-};
-
+//      localhost:3000/recuperar-contrasena
 // Controlador para manejar el envío del formulario de recuperación de contraseña
 exports.postRecuperarContrasena = (req, res, next) => {
-    const email = req.body.email;
+    const {email} = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).render('auth/recuperar-contrasena', {
-            titulo: 'Recuperar Contraseña',
-            path: '/recuperar-contrasena',
-            mensajeError: errors.array()[0].msg,
-            estilo: 'alert-danger',
-            autenticado: false
+        return res.status(422).json({
+            message: errors.array()[0].msg
         });
     }
 
     crypto.randomBytes(32, (err, buffer) => {
         if (err) {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            next(error);
-            return res.redirect('/recuperar-contrasena');
+            return res.status(500).json({ message: err.message });
         }
 
         const token = buffer.toString('hex');
@@ -135,12 +84,8 @@ exports.postRecuperarContrasena = (req, res, next) => {
         Usuario.findOne({ email: email })
             .then((usuario) => {
                 if (!usuario) {
-                    return res.status(422).render('auth/recuperar-contrasena', {
-                        titulo: 'Recuperar Contraseña',
-                        path: '/recuperar-contrasena',
-                        mensajeError: 'La cuenta no existe',
-                        estilo: 'alert-danger',
-                        autenticado: false
+                    return res.status(422).json({
+                        message: 'La cuenta no existe'
                     });
                 }
 
@@ -149,73 +94,32 @@ exports.postRecuperarContrasena = (req, res, next) => {
                 return usuario.save();
             })
             .then(() => {
-                res.redirect('/recuperar-contrasena');
                 transporter.sendMail({
                     to: email,
                     from: 'marisol.karina.pr40@gmail.com',
                     subject: 'Reinicio de password',
                     html: `<p>Has solicitado un reinicio de password</p>
-                           <p>Click aquí <a href="http://localhost:3000/nuevo-password/${token}">link</a> para establecer una nueva password.</p>`
+                           <p>Click aquí <a href="http://localhost:3000/nuevo-password/${token}">link</a> para establecer una nueva password.</p>
+                           <p>Token para recuperar contraseña: ${token}</p>`
                 });
+                return res.status(200).json({message: 'Correo enviado con el token para recuperar contraseña', tokenRecuperacion: token});
             })
             .catch((err) => {
-                const error = new Error(err);
-                error.httpStatusCode = 500;
-                return next(error);
+                res.status(500).json({ message: err.message });
             });
     });
 };
 
-exports.getNuevoPassword = (req, res, next) => {
-    const token = req.params.token;
 
-    Usuario.findOne({ tokenReinicio: token, expiracionTokenReinicio: { $gt: Date.now() } })
-        .then(usuario => {
-            if (!usuario) {
-                return res.status(422).render('auth/nuevo-password', {
-                    path: `/nuevo-password/${token}`,
-                    titulo: 'Nuevo Password',
-                    mensajeError: 'Token inválido o ha expirado.',
-                    idUsuario: null,
-                    tokenPassword: token,
-                    csrfToken: req.csrfToken()
-                });
-            }
-
-            res.render('auth/nuevo-password', {
-                path: `/nuevo-password/${token}`,
-                titulo: 'Nuevo Password',
-                mensajeError: null,
-                idUsuario: usuario._id.toString(),
-                tokenPassword: token,
-                csrfToken: req.csrfToken()
-            });
-        })
-        .catch(err => {
-            if (err) {
-                const error = new Error(err);
-                error.httpStatusCode = 500;
-                return next(error);
-            }
-            res.redirect('/login');
-        });
-};
-
-exports.postNuevoPassword = (req, res, next) => {
-    const { password, confirmPassword, idUsuario, tokenPassword } = req.body;
+// Crear la nueva contraseña usando el token
+//      localhost:3000/nuevo-password
+exports.postNuevoPassword = (req, res) => {
+    const { password, email, tokenPassword } = req.body;
 
     // Captura los errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).render('auth/nuevo-password', {
-            titulo: 'Nuevo Password',
-            path: `/nuevo-password/${tokenPassword}`,
-            mensajeError: errors.array()[0].msg, // Mostrar el primer error
-            estilo: 'alert-danger',
-            idUsuario,
-            tokenPassword,
-            csrfToken: req.csrfToken() // Asegura que el token CSRF esté presente
-        });
+        return res.status(422).json({ message: errors.array()[0].msg });
     }
 
     let usuarioParaActualizar;
@@ -223,19 +127,12 @@ exports.postNuevoPassword = (req, res, next) => {
     Usuario.findOne({
         tokenReinicio: tokenPassword,
         expiracionTokenReinicio: { $gt: Date.now() },
-        _id: idUsuario
+        // _id: idUsuario
+        email: email
     })
         .then(usuario => {
             if (!usuario) {
-                return res.status(422).render('auth/nuevo-password', {
-                    titulo: 'Nuevo Password',
-                    path: `/nuevo-password/${tokenPassword}`,
-                    mensajeError: 'Token inválido o ha expirado.',
-                    estilo: 'alert-danger',
-                    idUsuario,
-                    tokenPassword,
-                    csrfToken: req.csrfToken()
-                });
+                return res.status(422).json({ message: 'Token invalido o ha expirado.' });
             }
             usuarioParaActualizar = usuario;
             return bcrypt.hash(password, 12);
@@ -244,36 +141,18 @@ exports.postNuevoPassword = (req, res, next) => {
             usuarioParaActualizar.password = hashedPassword;
             usuarioParaActualizar.tokenReinicio = undefined;
             usuarioParaActualizar.expiracionTokenReinicio = undefined;
-            return usuarioParaActualizar.save();
-        })
-        .then(() => {
-            res.redirect('/login');
+            usuarioParaActualizar.save();
+            return res.status(200).json({ message: 'Nueva contraseña creada.' });
         })
         .catch(err => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
 
 
 // REGISTRO
-
-// Controlador para renderizar la página de registro
-exports.getRegistrarse = (req, res,next) => {
-    // Verificar si hay errores de validación
-    const errors = validationResult(req).array();  // Aquí recogemos los errores, si los hay
-
-    res.render('auth/registro', {
-        titulo: 'Registro',
-        path: '/registro',
-        mensajeError: '',  // Opcional: mensaje de error general si es necesario
-        validationErrors: errors,  // Pasamos los errores a la vista
-        autenticado: false
-    });
-};
-
+//        localhost:3000/registro
 // Controlador para manejar el registro de nuevos usuarios
 exports.postRegistrarse = (req, res) => {
     const { nombre, dni, email, password } = req.body;
@@ -281,13 +160,8 @@ exports.postRegistrarse = (req, res) => {
     // Captura los errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.log(errors.array());
-        return res.status(422).render('auth/registro', {
-            path: '/registro',
-            titulo: 'Registro',
-            mensajeError: errors.array()[0].msg,
-            //datosAnteriores: { nombre, dni, email, password },//
-            validationErrors: errors.array()// Enviar todos los errores para mostrarlos en la vista
+        return res.status(422).json({
+            message: errors.array()[0].msg
         });
     }
 
@@ -305,31 +179,28 @@ exports.postRegistrarse = (req, res) => {
             return usuario.save();
         })
         .then(() => {
-            res.redirect('/login');
 
             // Enviar correo de confirmación
-            return transporter.sendMail({
+            transporter.sendMail({
                 to: email,
                 from: 'marisol.karina.pr40@gmail.com',
                 subject: 'Registro exitoso',
                 html: '<h1>Bienvenido. Se ha registrado satisfactoriamente en el PetShop.</h1>'
             });
+            return res.status(200).json({message: 'Registro exitoso'});
         })
         .catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
 
-exports.postSalir = (req, res, next) => {
+//     localhost:3000/salir
+exports.postSalir = (req, res) => {
     req.session.destroy(err => {
         if (err) {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            return res.status(500).json({ message: err.message });
         }
-        res.redirect('/');
+        return res.status(200).json({message: "Cerró sesión."})
     })
 }

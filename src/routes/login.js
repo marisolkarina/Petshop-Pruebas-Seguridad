@@ -5,7 +5,6 @@ const router = express.Router();
 const Usuario = require('../models/usuario')
 
 // Recuperacion de cuenta
-router.get('/recuperar-contrasena', loginController.getRecuperarContrasena);
 router.post('/recuperar-contrasena', [
     // Validación de email
     check('email')
@@ -16,7 +15,6 @@ router.post('/recuperar-contrasena', [
 ], loginController.postRecuperarContrasena);
 
 // Nueva contraseña
-router.get('/nuevo-password/:token', loginController.getNuevoPassword);
 router.post('/nuevo-password', [
     // Validación de contraseña: longitud, letras mayúsculas y minúsculas, números y caracteres especiales
     body('password')
@@ -30,18 +28,9 @@ router.post('/nuevo-password', [
         .withMessage('La contraseña debe contener al menos un número')
         .matches(/[^A-Za-z0-9]/)
         .withMessage('La contraseña debe contener al menos un carácter especial (@, !, #, etc.)'),
-        
-    // Confirmación de contraseña
-    body('confirmPassword').custom((value, { req }) => {
-        if (value !== req.body.password) {
-            throw new Error('Las contraseñas no coinciden');
-        }
-        return true;
-    })
 ], loginController.postNuevoPassword);
 
 // Inicio de sesion
-router.get('/login', loginController.getLogin);
 router.post('/login', [
     check('email')
         .isEmail()
@@ -58,7 +47,6 @@ router.post('/login', [
 ], loginController.postLogin);
 
 // Registro
-router.get('/registro', loginController.getRegistrarse);
 router.post('/registro', [
     // Validación de nombre: solo letras, sin números ni símbolos
     body('nombre')
