@@ -32,45 +32,52 @@ exports.getLogin = (req, res,next) => {
 };
 
 
-
-
 // Controlador para procesar el inicio de sesión
-exports.postLogin = (req, res,next) => {
+exports.postLogin = (req, res) => {
     const { email, password } = req.body;
 
     // Captura los errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).render('auth/login', {
-            titulo: 'Login',
-            path: '/login',
-            mensajeError: errors.array()[0].msg, // Mostrar el primer error
-            datosAnteriores: { email, password },
-            validationErrors: errors.array() // Pasar todos los errores para mostrar en la vista
+        // return res.status(422).render('auth/login', {
+        //     titulo: 'Login',
+        //     path: '/login',
+        //     mensajeError: errors.array()[0].msg, // Mostrar el primer error
+        //     datosAnteriores: { email, password },
+        //     validationErrors: errors.array() // Pasar todos los errores para mostrar en la vista
+        // });
+        return res.status(422).json({
+            message: errors.array()[0].msg
         });
     }
 
     Usuario.findOne({ email: email })
         .then((usuario) => {
             if (!usuario) {
-                return res.status(422).render('auth/login', {
-                    titulo: 'Login',
-                    path: '/login',
-                    mensajeError: 'Email o contraseña incorrecto.',
-                    datosAnteriores: { email, password },
-                    validationErrors: []
+                // return res.status(422).render('auth/login', {
+                //     titulo: 'Login',
+                //     path: '/login',
+                //     mensajeError: 'Email o contraseña incorrecto.',
+                //     datosAnteriores: { email, password },
+                //     validationErrors: []
+                // });
+                return res.status(422).json({
+                    message: 'Email o contraseña invalido'
                 });
             }
 
             bcrypt.compare(password, usuario.password)
                 .then((doMatch) => {
                     if (!doMatch) {
-                        return res.status(422).render('auth/login', {
-                            titulo: 'Login',
-                            path: '/login',
-                            mensajeError: 'Email o contraseña incorrecto.',
-                            datosAnteriores: { email, password },
-                            validationErrors: []
+                        // return res.status(422).render('auth/login', {
+                        //     titulo: 'Login',
+                        //     path: '/login',
+                        //     mensajeError: 'Email o contraseña incorrecto.',
+                        //     datosAnteriores: { email, password },
+                        //     validationErrors: []
+                        // });
+                        return res.status(422).json({
+                            message: 'Email o contraseña invalido'
                         });
                     }
 
@@ -78,21 +85,19 @@ exports.postLogin = (req, res,next) => {
                     req.session.usuario = usuario;
                     req.session.save((err) => {
                         if (err) console.log('Error al guardar la sesión:', err);
-                        
-                        res.redirect('/detalles-cuenta');
+                        // res.redirect('/detalles-cuenta');
                     });
+                    res.status(200).json({message: 'login exitoso'});
                 });
         })
         .catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
 
 // Controlador para renderizar la página de recuperación de contraseña
-exports.getRecuperarContrasena = (req, res,next) => {
+exports.getRecuperarContrasena = (req, res) => {
     res.render('auth/recuperar-contrasena', {
         titulo: 'Recuperar Contraseña',
         path: '/recuperar-contrasena',
@@ -103,7 +108,7 @@ exports.getRecuperarContrasena = (req, res,next) => {
 };
 
 // Controlador para manejar el envío del formulario de recuperación de contraseña
-exports.postRecuperarContrasena = (req, res,next) => {
+exports.postRecuperarContrasena = (req, res, next) => {
     const email = req.body.email;
 
     const errors = validationResult(req);
