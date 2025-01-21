@@ -31,7 +31,6 @@
                 <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
             <% } %>
     
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <!-- Botón de Envío -->
             <button class="btn btn-primary" type="submit">
                 <% if (modoEdicion) { %>Actualizar Publicacion<% } else { %>Crear Publicacion<% } %>

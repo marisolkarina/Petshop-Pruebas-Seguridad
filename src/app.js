@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const express = require('express');
 
-const csrf = require('csurf');
+// const csrf = require('csurf');
 const multer = require('multer');
 
 const mongoose = require('mongoose');
@@ -28,7 +28,7 @@ const store = new MongoDBStore({
   collection: 'sessions'
 });
 
-const csrfProtection = csrf();
+// const csrfProtection = csrf();
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -57,7 +57,10 @@ const fileFilter = (req, file, cb) => {
 app.set('view engine', 'ejs');
 app.set('views', 'src/views');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('imagen'));
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -67,7 +70,7 @@ app.use('/utils', express.static(path.join(__dirname, 'utils')));
 app.use(express.static(path.join('node_modules', 'bootstrap', 'dist')));
 app.use(session({ secret: 'algo muy secreto', resave: false, saveUninitialized: false, store: store }));
 
-app.use(csrfProtection);
+// app.use(csrfProtection);
 
 app.use((req, res, next) => {
   // console.log(req.session);
@@ -90,7 +93,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   res.locals.autenticado = req.session.autenticado;
-  res.locals.csrfToken = req.csrfToken();
+  // res.locals.csrfToken = req.csrfToken();
   next();
 });
 
@@ -104,11 +107,12 @@ app.use(errorController.get404);
 app.use((err, req, res, next) => {
   console.log(err);
   // res.redirect('/500');
-  res.status(500).render('500', {
-    titulo: 'Error!',
-    path: '/500',
-    autenticado: req.session ? req.session.autenticado : false
-  });
+  // res.status(500).render('500', {
+  //   titulo: 'Error!',
+  //   path: '/500',
+  //   autenticado: req.session ? req.session.autenticado : false
+  // });
+  return res.status(500).json({ message: err.message });
 })
 
 mongoose
@@ -132,9 +136,10 @@ mongoose
     app.listen(3000);
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    return res.status(500).json({ message: err.message });
   });
 
 module.exports = app;

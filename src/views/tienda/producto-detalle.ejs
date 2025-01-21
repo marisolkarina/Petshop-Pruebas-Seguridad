@@ -42,7 +42,6 @@
                     <form action="/producto/eliminar-comentario" method="POST">
                         <input type="hidden" value="<%= producto._id %>" name="idProducto">
                         <input type="hidden" value="<%= comment.fechaComentario %>" name="fechaComentario">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn btn-link">Eliminar</button>
                     </form>
                 <% } %>

@@ -13,7 +13,6 @@
             
             <% if (items.length > 0) { %>
                 <form action="/crear-pedido" method="POST">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-success">Confirmar pedido</button>
                 </form>
 
@@ -43,7 +42,6 @@
                                         <form action="/actualizar-cantidad" method="POST">
                                             <input type="hidden" name="idProducto" value="<%= item.idProducto._id %>">
                                             <input type="number" name="cantidad" value="<%= item.cantidad %>" min="1" class="form-control">
-                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <button type="submit" class="btn btn-secondary mt-2">Actualizar</button>
                                         </form>
                                         <!--viendo el stock-->
@@ -64,7 +62,6 @@
                                     <td>
                                         <form action="/eliminar-producto" method="POST">
                                             <input type="hidden" name="idProducto" value="<%= item.idProducto._id %>">
-                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <button type="submit" class="btn btn-danger">Eliminar</button>
                                         </form>
                                     </td>

@@ -17,7 +17,7 @@
             
             <form class="d-flex" role="search" action="/productos" method="POST">
                 <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" name="textoIngresado">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                
                 <button class="btn btn-verde" type="submit">Buscar</button>
             </form>
         </div>
@@ -25,7 +25,7 @@
             <a class="btn btn-success" href="/login">Login</a>
         <% } else { %>
             <form action="/salir" method="post">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                
                 <button type="submit" class="btn btn-secondary">Salir</button>
             </form>
         <% } %>

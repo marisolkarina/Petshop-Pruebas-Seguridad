@@ -4,42 +4,23 @@ const Usuario = require('../models/usuario');
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
-const ITEMS_POR_PAGINA = 9;
 
 
-exports.getProductos = (req, res, next) => {
-    const pagina = +req.query.pagina || 1;
-    let nroProductos;
+exports.getProductos = (req, res) => {
 
     Producto.find()
-        .countDocuments()
-        .then((nroDocs) => {
-            nroProductos = nroDocs;
-            return Producto.find()
-                .skip((pagina-1) * ITEMS_POR_PAGINA)
-                .limit(ITEMS_POR_PAGINA)
-        })
+
         .then((productos) => {
-            res.render('tienda/lista-productos', {
-                prods: productos,
-                titulo: "Productos de la tienda",
-                path: "/productos",
-                autenticado: req.session.autenticado,
-                paginaActual: pagina,
-                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                tienePaginaAnterior: pagina > 1,
-                paginaSiguiente: pagina + 1,
-                paginaAnterior: pagina - 1,
-                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-            });
+            res.status(200).json({
+                message: 'Productos de la tienda',
+                prods: productos
+            })
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
-exports.getIndex = (req, res, next) => {
+exports.getIndex = (req, res) => {
 
     Producto.find()
         .then((productos) => {
@@ -50,260 +31,136 @@ exports.getIndex = (req, res, next) => {
                 autenticado: req.session.autenticado
             });
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
-
 }
 
-exports.getProductosPorCategoria = (categoria) => {
-
-    return (req, res) => {
-        const pagina = +req.query.pagina || 1;
-        let nroProductos;
+exports.getProductosPorCategoria = (req, res) => {
+    const {categoria} = req.params;
 
         Producto.find()
-            .countDocuments()
-            .then((nroDocs) => {
-                nroProductos = nroDocs;
-                return Producto.find()
-                    .skip((pagina-1) * ITEMS_POR_PAGINA)
-                    .limit(ITEMS_POR_PAGINA)
-            })
             .then((productosObtenidos) => {
                 const productosFiltrados = productosObtenidos.filter(producto =>
                     producto.categoria.toLowerCase() === categoria.toLowerCase()
                 );
 
-                res.render('tienda/lista-productos', {
-                    prods: productosFiltrados,
-                    titulo: `${categoria}`,
-                    path: `/productos/${categoria}`,
-                    autenticado: req.session.autenticado,
-                    paginaActual: pagina,
-                    tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                    tienePaginaAnterior: pagina > 1,
-                    paginaSiguiente: pagina + 1,
-                    paginaAnterior: pagina - 1,
-                    ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-                })
+                res.status(200).json({
+                    message: 'Productos Filtrados',
+                    prods: productosFiltrados
+                });
             }).catch((err) => {
-                const error = new Error(err);
-                error.httpStatusCode = 500;
-                return next(error);
+                res.status(500).json({ message: err.message });
             });
-    }
+    // }
 }
 
 //Filtrar por precio
 exports.postProductosPorPrecio = (req, res) => {
-    const pagina = +req.query.pagina || 1;
-    let nroProductos;
 
-    const precioMin = Number(req.body.min);
-    const precioMax = Number(req.body.max);
+    const {precioMin, precioMax} = req.body;
     
     Producto.find()
-        .countDocuments()
-        .then((nroDocs) => {
-            nroProductos = nroDocs;
-            return Producto.find()
-                .skip((pagina-1) * ITEMS_POR_PAGINA)
-                .limit(ITEMS_POR_PAGINA)
-        })
+
         .then((productosObtenidos) => {
             let productosFiltrados;
-            if(precioMin === 0) {
+            if(!precioMin) {
                 productosFiltrados = productosObtenidos.filter(producto => producto.precio <= precioMax );
-            } else if (precioMax === 0) {
+                console.log(productosFiltrados);
+            } else if (!precioMax) {
                 productosFiltrados = productosObtenidos.filter(producto => producto.precio >= precioMin );
             } else {
                 productosFiltrados = productosObtenidos.filter(producto => producto.precio >= precioMin && producto.precio <= precioMax );
             }
 
-            res.render('tienda/lista-productos', {
-                prods: productosFiltrados,
-                titulo: 'Productos segun precio',
-                path: '/productos/filtrados-por-precio',
-                autenticado: req.session.autenticado,
-                paginaActual: pagina,
-                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                tienePaginaAnterior: pagina > 1,
-                paginaSiguiente: pagina + 1,
-                paginaAnterior: pagina - 1,
-                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-            })
+            res.status(200).json({
+                message: 'Productos segun precio',
+                prods: productosFiltrados
+            });
+
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 }
 
-//ordenar productos de menor a mayor precio
-exports.getProductosMenorMayor = (req, res, next) => {
-    const pagina = +req.query.pagina || 1;
-    let nroProductos;
+//Ordenar productos alfabeticamente o por precio ascendente/descendente
+//       /productos/ordenar/:orden
+exports.getProductosOrdenados = (req, res) => {
+
+    const {orden} = req.params
 
     Producto.find()
-        .countDocuments()
-        .then((nroDocs) => {
-            nroProductos = nroDocs;
-            return Producto.find()
-                .skip((pagina-1) * ITEMS_POR_PAGINA)
-                .limit(ITEMS_POR_PAGINA)
-        })
-        .then((productosObtenidos) => {
-            const productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod1.precio - prod2.precio);
-            res.render('tienda/lista-productos', {
-                prods: productosOrdenados,
-                titulo: "Productos ordenados",
-                path: "/productos/ordenar/menor-a-mayor",
-                autenticado: req.session.autenticado,
-                paginaActual: pagina,
-                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                tienePaginaAnterior: pagina > 1,
-                paginaSiguiente: pagina + 1,
-                paginaAnterior: pagina - 1,
-                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
 
+        .then((productosObtenidos) => {
+            let productosOrdenados;
+            if (orden === 'alfabeticamente') {
+                productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod1.nombre.localeCompare(prod2.nombre));
+            } else if (orden === 'precio-ascendente') {
+                productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod1.precio - prod2.precio);
+            } else if (orden === 'precio-descendente') {
+                productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod2.precio - prod1.precio);
+            }
+            res.status(200).json({
+                message: 'Productos ordenados',
+                prods: productosOrdenados
             });
+
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 
 }
-//ordenar productos de mayor a menor precio
-exports.getProductosMayorMenor = (req, res, next) => {
-    const pagina = +req.query.pagina || 1;
-    let nroProductos;
 
-    Producto.find()
-        .countDocuments()
-        .then((nroDocs) => {
-            nroProductos = nroDocs;
-            return Producto.find()
-                .skip((pagina-1) * ITEMS_POR_PAGINA)
-                .limit(ITEMS_POR_PAGINA)
-        })
-        .then((productosObtenidos) => {
-            const productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod2.precio - prod1.precio);
-            res.render('tienda/lista-productos', {
-                prods: productosOrdenados,
-                titulo: "Productos ordenados",
-                path: "/productos/ordenar/mayor-a-menor",
-                autenticado: req.session.autenticado,
-                paginaActual: pagina,
-                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                tienePaginaAnterior: pagina > 1,
-                paginaSiguiente: pagina + 1,
-                paginaAnterior: pagina - 1,
-                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-            });
-        }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-
-}
-//ordenar productos alfabeticamente
-exports.getProductosAlfabeticamente = (req, res, next) => {
-    const pagina = +req.query.pagina || 1;
-    let nroProductos;
-
-    Producto.find()
-        .countDocuments()
-        .then((nroDocs) => {
-            nroProductos = nroDocs;
-            return Producto.find()
-                .skip((pagina-1) * ITEMS_POR_PAGINA)
-                .limit(ITEMS_POR_PAGINA)
-        })
-        .then((productosObtenidos) => {
-            const productosOrdenados = productosObtenidos.sort((prod1, prod2) => prod1.nombre.localeCompare(prod2.nombre));
-
-            res.render('tienda/lista-productos', {
-                prods: productosOrdenados,
-                titulo: "Productos ordenados",
-                path: "/productos/ordenar/alfabeticamente",
-                autenticado: req.session.autenticado,
-                paginaActual: pagina,
-                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                tienePaginaAnterior: pagina > 1,
-                paginaSiguiente: pagina + 1,
-                paginaAnterior: pagina - 1,
-                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-            });
-        }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-
-}
 
 // filtrar productos por color
-exports.getProductosPorColor = (color) => {
+exports.getProductosPorColor = (req, res) => {
 
-    return (req, res) => {
-        const pagina = +req.query.pagina || 1;
-        let nroProductos;
+    const {color} = req.params;
 
-        Producto.find()
-            .countDocuments()
-            .then((nroDocs) => {
-                nroProductos = nroDocs;
-                return Producto.find()
-                    .skip((pagina-1) * ITEMS_POR_PAGINA)
-                    .limit(ITEMS_POR_PAGINA)
-            })
-            .then((productosObtenidos) => {
-                const productosFiltrados = productosObtenidos.filter(producto =>
-                    producto.color.toLowerCase() === color.toLowerCase()
-                );
+    Producto.find()
+        .then((productosObtenidos) => {
+            const productosFiltrados = productosObtenidos.filter(producto =>
+                producto.color.toLowerCase() === color.toLowerCase()
+            );
 
-                res.render('tienda/lista-productos', {
-                    prods: productosFiltrados,
-                    titulo: `${color}`,
-                    path: `/productos/${color}`,
-                    autenticado: req.session.autenticado,
-                    paginaActual: pagina,
-                    tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
-                    tienePaginaAnterior: pagina > 1,
-                    paginaSiguiente: pagina + 1,
-                    paginaAnterior: pagina - 1,
-                    ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
-                })
-            }).catch((err) => {
-                const error = new Error(err);
-                error.httpStatusCode = 500;
-                return next(error);
+            res.status(200).json({
+                message: 'Productos ordenados',
+                prods: productosFiltrados
             });
-    }
+        }).catch((err) => {
+            res.status(500).json({ message: err.message });
+        });
 }
 
 //ver detalle de un producto
-exports.getProducto = (req, res, next) => {
-    const idProducto = req.params.idProducto;
+exports.getProducto = (req, res) => {
+    const {idProducto} = req.params;
+
     Producto.findById(idProducto)
         .then((producto) => {
-            res.render('tienda/producto-detalle', {
-                producto: producto,
-                titulo: producto.nombre,
-                path: '/productos',
-                autenticado: req.session.autenticado,
-                comentarios: producto.comentarios,
-                usuario: req.usuario
+            res.status(200).json({
+                message: 'Detalle de producto',
+                producto: producto
             });
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
+}
+
+//mostrar productos buscados por palabra
+exports.postProductoPalabra = (req, res) => {
+    const {stringBuscado} = req.body;
+
+    Producto.find()
+        .then((productos) => {
+            const productosBuscados = productos.filter(prod => prod.nombre.toLowerCase().includes(stringBuscado.toLowerCase()));
+            res.status(200).json({
+                message: 'Productos buscados',
+                prods: productosBuscados
+            });
+        }).catch((err) => {
+            res.status(500).json({ message: err.message });
+        });
+
 }
 
 //comentarios acerca del producto
@@ -325,14 +182,13 @@ exports.postComentar = (req, res) => {
         });
 }
 
-exports.postEliminarComentario = (req, res, next) => {
+exports.postEliminarComentario = (req, res) => {
     const idProducto = req.body.idProducto;
     const idUsuario = req.usuario._id;
     const fechaComentario = req.body.fechaComentario;
     const role = req.usuario.role;
     Producto.findById(idProducto)
         .then((producto) => {
-            
             return producto.deleteComentario(idUsuario, fechaComentario, role);
         })
         .then((result) => {
@@ -344,28 +200,8 @@ exports.postEliminarComentario = (req, res, next) => {
 
 }
 
-//mostrar productos buscados por palabra
-exports.postProductoPalabra = (req, res, next) => {
-    const stringBuscado = req.body.textoIngresado;
 
-    Producto.find()
-        .then((productos) => {
-            const productosBuscados = productos.filter(prod => prod.nombre.toLowerCase().includes(stringBuscado.toLowerCase()));
-            res.render('tienda/lista-productos', {
-                prods: productosBuscados,
-                titulo: 'Productos buscados',
-                path: '/productos',
-                autenticado: req.session.autenticado
-            });
-        }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-
-}
-
-exports.getCarrito = (req, res, next) => {
+exports.getCarrito = (req, res) => {
     req.usuario
         .populate('carrito.items.idProducto')
         .then((usuario) => {
@@ -385,7 +221,7 @@ exports.getCarrito = (req, res, next) => {
 };
 
 
-exports.postCarrito = (req, res, next) => {
+exports.postCarrito = (req, res) => {
     const idProducto = req.body.idProducto;
     const cantidad = parseInt(req.body.cantidad, 10);
 
@@ -407,7 +243,7 @@ exports.postCarrito = (req, res, next) => {
 
 }
 
-exports.postEliminarProductoCarrito = (req, res, next) => {
+exports.postEliminarProductoCarrito = (req, res) => {
     const idProducto = req.body.idProducto;
 
     Producto.findById(idProducto)
@@ -460,7 +296,7 @@ exports.getMisPedidos = (req, res, next) => {
 }
 
 
-exports.postMisPedidos = (req, res, next) => {
+exports.postMisPedidos = (req, res) => {
     req.usuario
         .populate('carrito.items.idProducto')
         .then((usuario) => {
@@ -510,7 +346,6 @@ exports.postCancelarPedido = (req, res) => {
         .catch((err) => {
             const error = new Error(err);
             error.httpStatusCode = 500;
-            
         });
 }
 
@@ -649,7 +484,7 @@ exports.postAgregarListaDeseos = (req, res, next) => {
         });
 }
 
-exports.postEliminarProdListaDeseos = (req, res, next) => {
+exports.postEliminarProdListaDeseos = (req, res) => {
     const idProducto = req.body.idProducto;
 
     Producto.findById(idProducto)

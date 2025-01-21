@@ -28,7 +28,6 @@
                         <form action="/cancelar-pedido" method="POST">
                             <input type="hidden" value="<%= pedido._id %>" name="idPedido">
                             <% if (pedido.estado !== 'cancelado') { %>
-                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button type="submit" class="btn btn-danger mt-2 w-100">Cancelar pedido</button>
                             <% } %>
                         </form>

@@ -24,7 +24,6 @@
                     <a href="/editar-publicacion/<%= publicacion._id %>" class="btn btn-warning w-50 mx-1">Editar</a>
                     <form action="/eliminar-publicacion" method="POST" class="w-50 mx-1">
                         <input type="hidden" value="<%= publicacion._id %>" name="idPublicacion">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" >
                         <button class="btn btn-danger w-100" type="submit">Eliminar</button>
                     </form>
                 </div>

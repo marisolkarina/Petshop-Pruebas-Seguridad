@@ -1,10 +1,120 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const mongoose = require('mongoose');
-const app = require('../src/app');
+const Producto = require('../../src/models/producto');
 
-const Producto = require('../src/models/producto');
-chai.use(chaiHttp);
+const {getProductos, getProductosPorCategoria} = require('../../src/controllers/tienda');
+
+jest.mock('../../src/models/producto');
+
+describe('Tienda de productos', () => {
+    beforeEach(() => {
+        Producto.find.mockClear();
+    });
+
+    test('should return all products', async () => {
+
+        const productosMock = [
+            {
+                _id: '60c72b1f9a934e001c8c0c85',
+                nombre: 'Alfombra cognitiva',
+                urlImagen: "url1",
+                descripcion: "Alfombra cognitiva descripcion",
+                precio: 100,
+                categoria: 'perro',
+                color: 'verde',
+                stock: 10,
+                idUsuario: '1'
+            },
+            {
+                _id: '60c72b1f9a934e001c8c0c86',
+                nombre: 'Polera',
+                urlImagen: "url2",
+                descripcion: "Polera descripcion",
+                precio: 200,
+                categoria: 'gato',
+                color: 'celeste',
+                stock: 5,
+                idUsuario: '2'
+            },
+        ];
+
+        Producto.find.mockResolvedValue(productosMock);
+
+        const req = {};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await getProductos(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Productos de la tienda',
+            prods: productosMock,
+        });
+    });
+
+    test('should return a list of products by category', async () => {
+
+        const productosMock = [
+            {
+                _id: '60c72b1f9a934e001c8c0c85',
+                nombre: 'Alfombra cognitiva',
+                urlImagen: "url1",
+                descripcion: "Alfombra cognitiva descripcion",
+                precio: 100,
+                categoria: 'perro',
+                color: 'verde',
+                stock: 10,
+                idUsuario: '1'
+            },
+            {
+                _id: '60c72b1f9a934e001c8c0c86',
+                nombre: 'Polera',
+                urlImagen: "url2",
+                descripcion: "Polera descripcion",
+                precio: 200,
+                categoria: 'gato',
+                color: 'celeste',
+                stock: 5,
+                idUsuario: '2'
+            },
+        ];
+
+        Producto.find.mockResolvedValue(productosMock);
+
+        const req = {
+            params: { categoria: 'perro' },
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await getProductosPorCategoria(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Productos Filtrados',
+            prods: [{
+                _id: '60c72b1f9a934e001c8c0c85',
+                nombre: 'Alfombra cognitiva',
+                urlImagen: "url1",
+                descripcion: "Alfombra cognitiva descripcion",
+                precio: 100,
+                categoria: 'perro',
+                color: 'verde',
+                stock: 10,
+                idUsuario: '1'
+            }]
+        });
+    });
+});
+
+
+
 
 //pruebas unitarias
 //getProductos - alexia
