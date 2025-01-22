@@ -77,7 +77,7 @@ exports.postCrearProducto = (req, res) => {
 };
 
 //      localhost:3000/admin/editar-producto/:idProducto
-exports.postEditarProducto = (req, res, next) => {
+exports.postEditarProducto = (req, res) => {
     const {idProducto} = req.params;
     const {nombre, precio, descuento, fechaExpiracion, descripcion, categoria, color, stock, urlImagen} = req.body;
 
@@ -110,14 +110,12 @@ exports.postEditarProducto = (req, res, next) => {
             producto.categoria = categoria;
             producto.color = color;
             producto.stock = stock;
-            return producto.save();
-
-        })
-        .then((producto) => {
+            producto.save();
             return res.status(200).json({
                 message: 'Producto editado',
                 producto: producto
             });
+
         })
         .catch((err) => {
             res.status(500).json({ message: err.message });
@@ -173,7 +171,6 @@ exports.postEliminarProducto = async (req, res) => {
         // Responder con éxito
         res.status(200).json({ message: 'Producto eliminado.' });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ message: 'Error al eliminar el producto.' });
     }
 };
