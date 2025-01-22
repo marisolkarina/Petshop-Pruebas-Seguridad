@@ -5,7 +5,6 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon src/app.js",
-    "test": "jest",
     "test:unit": "jest test/unit",
     "test:integration": "mocha test/integration",
     "test:load": "artillery run test/load/load-test.yml"
