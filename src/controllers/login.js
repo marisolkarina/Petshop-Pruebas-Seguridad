@@ -64,7 +64,7 @@ exports.postLogin = (req, res) => {
 
 //      localhost:3000/recuperar-contrasena
 // Controlador para manejar el envío del formulario de recuperación de contraseña
-exports.postRecuperarContrasena = (req, res, next) => {
+exports.postRecuperarContrasena = (req, res) => {
     const {email} = req.body;
 
     const errors = validationResult(req);

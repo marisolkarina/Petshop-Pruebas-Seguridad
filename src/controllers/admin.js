@@ -8,103 +8,38 @@ const file = require('../utils/file');
 
 
 //Administracion de Productos
-
+//      localhost:3000/admin/productos
 exports.getProductos = (req, res,next) => {
 
     Producto
         .find()
         .then((productos) => {
-            res.render('admin/productos', {
+            if (req.usuario.role !== 'admin') {
+                return res.status(500).json({
+                    message: 'No tiene rol de admin.'
+                });
+            }
+            res.status(200).json({
+                message: 'Administracion de productos',
                 prods: productos,
-                titulo: "Administracion de Productos",
-                path: "/admin/productos",
                 autenticado: req.session.autenticado
             });
         }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 
 };
 
-exports.getCrearProducto = (req, res,next) => {
-    res.render('admin/crear-editar-producto', {
-        titulo: 'Crear Producto',
-        path: '/admin/crear-producto',
-        autenticado: req.session.autenticado,
-        modoEdicion: false,
-        mensajeError : null,
-        tieneError:false,
-        validationErrors: []
-    })
-};
+//      localhost:3000/crear-producto
+exports.postCrearProducto = (req, res) => {
 
-exports.postCrearProducto = (req, res,next) => {
-    const idProducto = req.body.idProducto;
-    const nombre = req.body.nombre;
-    const precio = Number(req.body.precio);
-    const descuento = Number(req.body.descuento);
-    const fechaExpiracion = req.body.fechaExpiracion;
-    const descripcion = req.body.descripcion;
-    const categoria = req.body.categoria;
-    const color = req.body.color;
-    const stock = req.body.stock;
-    const imagen = req.file;
-
-    let urlImagen = '';
-    if (imagen) urlImagen = `imagenes/${req.file.filename}`;
-
-    if (!imagen) {
-        return res.status(422).render('admin/crear-editar-producto', {
-            path: '/admin/crear-editar-producto',
-            titulo: 'Crear Producto',
-            modoEdicion: false,
-            tieneError: true,
-            mensajeError: 'Debe cargar una imagen del producto',
-            validationErrors: [],
-            producto: {
-                nombre: nombre,
-                descripcion: descripcion,
-                precio: precio,
-                descuento: {
-                    valor: descuento,
-                    fechaExpiracion: fechaExpiracion
-                },
-                categoria: categoria,
-                color: color,
-                stock: stock,
-                _id: idProducto
-            },
-        });
-
-    }
+    const {nombre, precio, descuento, fechaExpiracion, descripcion, categoria, color, stock, urlImagen} = req.body;
 
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.status(422).render('admin/crear-editar-producto', {
-            path: '/admin/crear-editar-producto',
-            titulo: 'Producto admin',
-            mensajeError: errors.array()[0].msg,
-            modoEdicion:false,
-            tieneError:true,
-            validationErrors: errors.array(),
-            
-            producto: {
-                nombre: nombre,
-                descripcion: descripcion,
-                precio: precio,
-                descuento: {
-                    valor: descuento,
-                    fechaExpiracion: fechaExpiracion
-                },
-                categoria: categoria,
-                color: color,
-                stock: stock,
-                idUsuario: req.usuario._id,
-                _id: idProducto
-            },
+        return res.status(422).json({
+            message: errors.array()[0].msg,
         });
       }
 
@@ -125,119 +60,50 @@ exports.postCrearProducto = (req, res,next) => {
     });
 
     if (req.usuario.role !== 'admin') {
-        return res.redirect('/');
+        return res.status(500).json({
+            message: 'No tiene rol de admin.'
+        });
     }
     producto
         .save()
         .then((result) => {
-            console.log(result);
-            console.log('Producto creado');
-            res.redirect('/admin/productos');
+            res.status(200).json({
+                message: 'Producto creado',
+                producto: producto
+            });
         })
         .catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
-exports.getEditarProducto = (req, res,next) => {
-    const idProducto = req.params.idProducto;
-
-    Producto.findById(idProducto)
-        .then((producto) => {
-            
-            res.render('admin/crear-editar-producto', {
-                titulo: 'Editar Producto',
-                path: '/admin/editar-producto',
-                producto: producto,
-                modoEdicion: true,
-                autenticado: req.session.autenticado,
-                mensajeError : null,
-                tieneError:false,
-                validationErrors:[]
-            })
-        }).catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-
-}
-
+//      localhost:3000/admin/editar-producto/:idProducto
 exports.postEditarProducto = (req, res, next) => {
-    const idProducto = req.body.idProducto;
-    const nombre = req.body.nombre;
-    const precio = Number(req.body.precio);
-    const descuento = Number(req.body.descuento);
-    const fechaExpiracion = req.body.fechaExpiracion;
-    const descripcion = req.body.descripcion;
-    const categoria = req.body.categoria;
-    const color = req.body.color;
-    const stock = parseInt(req.body.stock);
-    const imagen = req.file;
-
-    if (!imagen) {
-        return res.status(422).render('admin/crear-editar-producto', {
-            path: '/admin/crear-editar-producto',
-            titulo: 'Editar Producto',
-            modoEdicion: true,
-            tieneError: true,
-            mensajeError: 'Debe cargar una imagen del producto',
-            validationErrors: [],
-            producto: {
-                nombre: nombre,
-                descripcion: descripcion,
-                precio: precio,
-                descuento: {
-                    valor: descuento,
-                    fechaExpiracion: fechaExpiracion
-                },
-                categoria: categoria,
-                color: color,
-                stock: stock,
-                _id: idProducto
-            },
-        });
-    }
+    const {idProducto} = req.params;
+    const {nombre, precio, descuento, fechaExpiracion, descripcion, categoria, color, stock, urlImagen} = req.body;
 
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.status(422).render('admin/crear-editar-producto', {
-            path: '/admin/crear-editar-producto',
-            titulo: 'Producto admin',
-            mensajeError: errors.array()[0].msg,
-            modoEdicion: true,
-            tieneError: true,
-            validationErrors: errors.array(),
-        
-            producto: {
-                nombre: nombre,
-                descripcion: descripcion,
-                precio: precio,
-                descuento: {
-                    valor: descuento,
-                    fechaExpiracion: fechaExpiracion
-                },
-                categoria: categoria,
-                color: color,
-                stock: stock,
-                _id: idProducto
-            },
+        return res.status(422).json({
+            message: errors.array()[0].msg,
         });
       }
 
     Producto.findById(idProducto)
         .then((producto) => {
             if (req.usuario.role !== 'admin') {
-                return res.redirect('/');
+                return res.status(500).json({
+                    message: 'No tiene rol de admin.'
+                });
+            }
+            if(!producto) {
+                return res.status(500).json({
+                    message: 'No existe el producto.'
+                });
             }
             producto.nombre = nombre;
-            if (imagen) {
-                file.deleteFile('src/'+producto.urlImagen);
-                producto.urlImagen = `imagenes/${req.file.filename}`;
-            }
+            producto.urlImagen = urlImagen;
             producto.descripcion = descripcion;
             producto.precio = precio;
             producto.descuento.valor = descuento;
@@ -246,41 +112,45 @@ exports.postEditarProducto = (req, res, next) => {
             producto.color = color;
             producto.stock = stock;
             return producto.save();
+
         })
-        .then((result) => {
-            console.log('Producto guardado');
-            res.redirect('/admin/productos');
+        .then((producto) => {
+            return res.status(200).json({
+                message: 'Producto editado',
+                producto: producto
+            });
         })
         .catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 
-exports.postEliminarProducto = (req, res, next) => {
+exports.postEliminarProducto = (req, res) => {
 
-    const idProducto = req.body.idProducto;
+    const {idProducto} = req.params;
 
     if (req.usuario.role !== 'admin') {
-        return res.redirect('/');
+        return res.status(500).json({
+            message: 'No tiene rol de admin.'
+        });
     }
 
     Producto.findById(idProducto)
         .then(producto => {
             if(!producto) {
-                return next(new Error('Producto no se ha encontrado'));
+                return res.status(500).json({
+                    message: 'No existe el producto.'
+                });
             }
-            file.deleteFile('src/'+producto.urlImagen);
             return Producto.findByIdAndDelete(idProducto);
         })
-        .then(result => {
-            res.redirect('/admin/productos');
+        .then(() => {
+            return res.status(200).json({
+                message: 'Producto eliminado.',
+            });
         })
         .catch(err => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: err.message });
         });
 };
 

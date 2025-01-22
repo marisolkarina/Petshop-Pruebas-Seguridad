@@ -11,8 +11,6 @@ const Usuario = require('../models/usuario');
 router.get('/productos', isAuth, adminController.getProductos);
 
 // /admin/crear-producto
-router.get('/crear-producto', isAuth, adminController.getCrearProducto);
-
 router.post('/crear-producto',
     [
         body('nombre')
@@ -37,10 +35,8 @@ router.post('/crear-producto',
     ]
     , isAuth, adminController.postCrearProducto);
 
-// /admin/editar-producto
-router.get('/editar-producto/:idProducto', isAuth, adminController.getEditarProducto);
-
-router.post('/editar-producto',
+// /admin/editar-producto/:idProducto
+router.put('/editar-producto/:idProducto',
     [
         body('nombre')
             .isString().withMessage('El nombre debe ser un texto')
@@ -66,8 +62,8 @@ router.post('/editar-producto',
 
     , isAuth, adminController.postEditarProducto);
 
-// /admin/eliminar-producto
-router.post('/eliminar-producto', isAuth, adminController.postEliminarProducto);
+// /admin/eliminar-producto/:idProducto
+router.delete('/eliminar-producto/:idProducto', isAuth, adminController.postEliminarProducto);
 
 // /admin/usuarios
 router.get('/usuarios', isAuth, adminController.getUsuarios);
