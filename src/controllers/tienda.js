@@ -243,21 +243,47 @@ exports.postCarrito = (req, res) => {
 
 }
 
-exports.postEliminarProductoCarrito = (req, res) => {
-    const idProducto = req.body.idProducto;
+// exports.postEliminarProductoCarrito = (req, res) => {
+//     const idProducto = req.body.idProducto;
 
-    Producto.findById(idProducto)
-        .then((producto) => {
-            return req.usuario.deleteItemDelCarrito(idProducto, producto);
-        })
-        .then((result) => {
-            res.redirect('/carrito');
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+//     Producto.findById(idProducto)
+//         .then((producto) => {
+//             if (!producto) {
+//                 return res.redirect('/carrito'); // Si no existe, redirige directamente
+//             }
+//             return req.usuario.deleteItemDelCarrito(idProducto, producto);
+//         })
+//         .then((result) => {
+//             res.redirect('/carrito');
+//         })
+//         .catch((err) => {
+//             console.log(err);
+//             res.redirect('/carrito'); // Redirige incluso si hay errores
+//         });
 
-}
+// }
+
+exports.postEliminarProductoCarrito = async (req, res) => {
+    try {
+        const idProducto = req.body.idProducto;
+
+        const producto = await Producto.findById(idProducto);
+        if (!producto) {
+            return res.redirect('/carrito'); // Producto no encontrado
+        }
+
+        const resultado = await req.usuario.deleteItemDelCarrito(idProducto, producto);
+        if (!resultado) {
+            console.error('Error eliminando el producto del carrito');
+        }
+
+        res.redirect('/carrito'); // Redirige si todo salió bien
+    } catch (err) {
+        console.error(err);
+        res.redirect('/carrito'); // Redirige en caso de error
+    }
+};
+
 
 exports.postActualizarCantidadCarrito = (req, res, next) => {
     const idProducto = req.body.idProducto;

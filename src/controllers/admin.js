@@ -125,33 +125,58 @@ exports.postEditarProducto = (req, res, next) => {
         });
 };
 
-exports.postEliminarProducto = (req, res) => {
+// exports.postEliminarProducto = (req, res) => {
 
-    const {idProducto} = req.params;
+//     const {idProducto} = req.params;
 
-    if (req.usuario.role !== 'admin') {
-        return res.status(500).json({
-            message: 'No tiene rol de admin.'
-        });
+//     if (req.usuario.role !== 'admin') {
+//         return res.status(500).json({
+//             message: 'No tiene rol de admin.'
+//         });
+//     }
+
+//     Producto.findById(idProducto)
+//         .then(producto => {
+//             if(!producto) {
+//                 return res.status(500).json({
+//                     message: 'No existe el producto.'
+//                 });
+//             }
+//             return Producto.findByIdAndDelete(idProducto);
+//         })
+//         .then(() => {
+//             return res.status(200).json({
+//                 message: 'Producto eliminado.',
+//             });
+//         })
+//         .catch(err => {
+//             res.status(500).json({ message: err.message });
+//         });
+// };
+exports.postEliminarProducto = async (req, res) => {
+    const idProducto = req.params.idProducto;
+
+    try {
+        // Validar rol de admin
+        if (req.usuario.role !== 'admin') {
+            return res.status(500).json({ message: 'No tiene rol de admin.' });
+        }
+
+        // Buscar producto por ID
+        const producto = await Producto.findById(idProducto);
+        if (!producto) {
+            return res.status(404).json({ message: 'Producto no encontrado.' });
+        }
+
+        // Eliminar producto
+        await Producto.findByIdAndDelete(idProducto);
+
+        // Responder con éxito
+        res.status(200).json({ message: 'Producto eliminado.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error al eliminar el producto.' });
     }
-
-    Producto.findById(idProducto)
-        .then(producto => {
-            if(!producto) {
-                return res.status(500).json({
-                    message: 'No existe el producto.'
-                });
-            }
-            return Producto.findByIdAndDelete(idProducto);
-        })
-        .then(() => {
-            return res.status(200).json({
-                message: 'Producto eliminado.',
-            });
-        })
-        .catch(err => {
-            res.status(500).json({ message: err.message });
-        });
 };
 
 

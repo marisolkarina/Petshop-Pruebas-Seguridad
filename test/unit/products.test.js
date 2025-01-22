@@ -1,6 +1,9 @@
 const Producto = require('../../src/models/producto');
 
-const {getProductos, getProductosPorCategoria} = require('../../src/controllers/tienda');
+const { postEliminarProducto } = require('../../src/controllers/admin');
+
+jest.mock('../../src/models/producto');
+const { getProductos, getProductosPorCategoria, postEliminarProductoCarrito } = require('../../src/controllers/tienda');
 
 jest.mock('../../src/models/producto');
 
@@ -111,8 +114,133 @@ describe('Tienda de productos', () => {
             }]
         });
     });
+
+
+    test('should delete a product from the cart', async () => {
+        const productoMock = {
+            _id: '60c72b1f9a934e001c8c0c85',
+            nombre: 'Alfombra cognitiva',
+            urlImagen: "url1",
+            descripcion: "Alfombra cognitiva descripcion",
+            precio: 100,
+            categoria: 'perro',
+            color: 'verde',
+            stock: 10,
+            idUsuario: '1',
+        };
+    
+        const usuarioMock = {
+            deleteItemDelCarrito: jest.fn().mockResolvedValue(true), // Simula la eliminación
+        };
+    
+        Producto.findById.mockResolvedValue(productoMock); // Simula que el producto existe
+    
+        const req = {
+            body: { idProducto: productoMock._id },
+            usuario: usuarioMock,
+        };
+    
+        const res = {
+            redirect: jest.fn(), // Mock de redirección
+        };
+    
+        await postEliminarProductoCarrito(req, res);
+    
+        // Validaciones
+        expect(Producto.findById).toHaveBeenCalledWith(productoMock._id);
+        expect(req.usuario.deleteItemDelCarrito).toHaveBeenCalledWith(productoMock._id, productoMock);
+        expect(res.redirect).toHaveBeenCalledWith('/carrito');// Redirección 
+    });
+    
+    
+
+    test('should handle error when product does not exist', async () => {
+        Producto.findById.mockResolvedValue(null); // Simula que el producto no existe
+
+        const req = {
+            body: { idProducto: 'invalidId' },
+            usuario: {
+                deleteItemDelCarrito: jest.fn(),
+            },
+        };
+
+        const res = {
+            redirect: jest.fn(),
+        };
+
+        await postEliminarProductoCarrito(req, res);
+
+        expect(Producto.findById).toHaveBeenCalledWith('invalidId'); // Validar que se intenta buscar
+        expect(req.usuario.deleteItemDelCarrito).not.toHaveBeenCalled(); // No debería intentar eliminar
+        expect(res.redirect).toHaveBeenCalledWith('/carrito'); // Redirección 
+    });
+
 });
 
+
+
+
+
+
+describe('Admin - Eliminar Producto', () => {
+    beforeEach(() => {
+        Producto.findById.mockClear();
+        Producto.findByIdAndDelete.mockClear();
+    });
+
+    test('should delete a product as admin', async () => {
+        // Mock del producto
+        const productoMock = {
+            _id: '60c72b1f9a934e001c8c0c85',
+            nombre: 'Alfombra cognitiva',
+            urlImagen: "url1",
+            descripcion: "Alfombra cognitiva descripcion",
+            precio: 100,
+            categoria: 'perro',
+            color: 'verde',
+            stock: 10,
+            idUsuario: '1',
+        };
+
+        Producto.findById.mockResolvedValue(productoMock); // Simula que el producto existe
+        Producto.findByIdAndDelete.mockResolvedValue(); // Simula la eliminación exitosa
+
+        const req = {
+            params: { idProducto: productoMock._id },
+            usuario: { role: 'admin' },
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await postEliminarProducto(req, res);
+
+        expect(Producto.findById).toHaveBeenCalledWith(productoMock._id); // Validar que se busca el producto
+        expect(Producto.findByIdAndDelete).toHaveBeenCalledWith(productoMock._id); // Validar que se elimina
+        expect(res.status).toHaveBeenCalledWith(200); // Respuesta de éxito
+        expect(res.json).toHaveBeenCalledWith({ message: 'Producto eliminado.' });
+    });
+
+    test('should not delete a product if not admin', async () => {
+        const req = {
+            params: { idProducto: '60c72b1f9a934e001c8c0c85' },
+            usuario: { role: 'user' },
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await postEliminarProducto(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500); // Error por falta de permisos
+        expect(res.json).toHaveBeenCalledWith({ message: 'No tiene rol de admin.' });
+        expect(Producto.findById).not.toHaveBeenCalled(); // No debería buscar en la DB
+    });
+});
 
 
 
@@ -131,72 +259,72 @@ describe('Tienda de productos', () => {
 
 //EJEMPLOS DEL PROFESOR..................................................
 
-    // describe('GET /api/users', () => {
-    //     it('should return all users', (done) => {
-    //     chai
-    //         .request(app)
-    //         .get('/api/users')
-    //         .end((err, res) => {
-    //             expect(res).to.have.status(200);
-    //             expect(res.body).to.be.an('array');
-    //             expect(res.body.length).to.be.greaterThan(0);
-    //             done();
-    //         });
-    //     });
-    // });
+// describe('GET /api/users', () => {
+//     it('should return all users', (done) => {
+//     chai
+//         .request(app)
+//         .get('/api/users')
+//         .end((err, res) => {
+//             expect(res).to.have.status(200);
+//             expect(res.body).to.be.an('array');
+//             expect(res.body.length).to.be.greaterThan(0);
+//             done();
+//         });
+//     });
+// });
 
 
-    // describe('POST /api/users', () => {
-    //     it('should create a new user', (done) => {
-    //         const newUser = { name: 'Charlie', age: 35 };
-    //         chai
-    //         .request(app)
-    //         .post('/api/users')
-    //         .send(newUser)
-    //         .end((err, res) => {
-    //             expect(res).to.have.status(201);
-    //             expect(res.body).to.be.an('object');
-    //             expect(res.body).to.have.property('id');
-    //             expect(res.body.name).to.equal('Charlie');
-    //             expect(res.body.age).to.equal(35);
-    //             done();
-    //         });
-    //     });
-    //     it('should return 400 for invalid input', (done) => {
-    //         chai
-    //             .request(app)
-    //             .post('/api/users')
-    //             .send({ name: 'Charlie' }) // Falta el campo "age"
-    //             .end((err, res) => {
-    //                 expect(res).to.have.status(400);
-    //                 expect(res.body).to.have.property('message', 'Invalid input');
-    //                 done();
-    //             });
-    //     });
-    // });
+// describe('POST /api/users', () => {
+//     it('should create a new user', (done) => {
+//         const newUser = { name: 'Charlie', age: 35 };
+//         chai
+//         .request(app)
+//         .post('/api/users')
+//         .send(newUser)
+//         .end((err, res) => {
+//             expect(res).to.have.status(201);
+//             expect(res.body).to.be.an('object');
+//             expect(res.body).to.have.property('id');
+//             expect(res.body.name).to.equal('Charlie');
+//             expect(res.body.age).to.equal(35);
+//             done();
+//         });
+//     });
+//     it('should return 400 for invalid input', (done) => {
+//         chai
+//             .request(app)
+//             .post('/api/users')
+//             .send({ name: 'Charlie' }) // Falta el campo "age"
+//             .end((err, res) => {
+//                 expect(res).to.have.status(400);
+//                 expect(res.body).to.have.property('message', 'Invalid input');
+//                 done();
+//             });
+//     });
+// });
 
 
-    // describe('GET /api/users/:id', () => {
-    //     it('should return a user by ID', (done) => {
-    //         chai
-    //         .request(app)
-    //         .get('/api/users/1')
-    //         .end((err, res) => {
-    //             expect(res).to.have.status(200);
-    //             expect(res.body).to.be.an('object');
-    //             expect(res.body.name).to.equal('Alice');
-    //             done();
-    //         });
-    //     });
+// describe('GET /api/users/:id', () => {
+//     it('should return a user by ID', (done) => {
+//         chai
+//         .request(app)
+//         .get('/api/users/1')
+//         .end((err, res) => {
+//             expect(res).to.have.status(200);
+//             expect(res.body).to.be.an('object');
+//             expect(res.body.name).to.equal('Alice');
+//             done();
+//         });
+//     });
 
-    //     it('should return 404 for non-existent user', (done) => {
-    //         chai
-    //         .request(app)
-    //         .get('/api/users/999')
-    //         .end((err, res) => {
-    //             expect(res).to.have.status(404);
-    //             expect(res.body).to.have.property('message', 'User not found');
-    //             done();
-    //         });
-    //     });
-    // });
+//     it('should return 404 for non-existent user', (done) => {
+//         chai
+//         .request(app)
+//         .get('/api/users/999')
+//         .end((err, res) => {
+//             expect(res).to.have.status(404);
+//             expect(res.body).to.have.property('message', 'User not found');
+//             done();
+//         });
+//     });
+// });
