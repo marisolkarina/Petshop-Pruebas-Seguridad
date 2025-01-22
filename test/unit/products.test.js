@@ -1,8 +1,16 @@
 const Producto = require('../../src/models/producto');
 
 const {getProductos, getProductosPorCategoria} = require('../../src/controllers/tienda');
+const {postCrearProducto} = require('../../src/controllers/admin');
+const {validationResult} = require('express-validator');
 
 jest.mock('../../src/models/producto');
+jest.mock('express-validator', () => ({
+    validationResult: jest.fn(() => ({
+        isEmpty: jest.fn(() => true),
+        array: jest.fn(() => []),
+    })),
+}));
 
 describe('Tienda de productos', () => {
     beforeEach(() => {
@@ -111,6 +119,104 @@ describe('Tienda de productos', () => {
             }]
         });
     });
+});
+
+describe('Funciones de admin: crud de productos', () => {
+    beforeEach(() => {
+        // limpiando el mock entre pruebas
+        Producto.find.mockClear();
+        validationResult.mockClear();
+    });
+
+    test('should create a product (admin)', async () => {
+        const nombre = 'Alfombra cognitiva';
+        const urlImagen = "url1";
+        const descripcion = "Alfombra cognitiva descripcion";
+        const precio = 100;
+        const descuento = 10;
+        const fechaExpiracion = '2025-01-25';
+        const categoria = 'perro';
+        const color = 'verde';
+        const stock = 10;
+
+        const req = {
+            body: { nombre, urlImagen, descripcion, precio, descuento, fechaExpiracion, categoria, color, stock },
+            usuario: { //usuario logueado simulado
+                _id: '12345',
+                role: 'admin',
+            },
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        // simulamos el producto que se crea
+        const productoMock = {
+            _id: '60c72b1f9a934e001c8c0c85',
+            ...req.body,
+            idUsuario: req.usuario._id,
+            save: jest.fn().mockResolvedValue(), // Simula save exitoso
+        };
+
+        // Simulamos el comportamiento del modelo
+        Producto.mockImplementation(() => productoMock);
+
+        await postCrearProducto(req, res);
+
+        expect(Producto).toHaveBeenCalledWith({
+            nombre,
+            urlImagen,
+            descripcion,
+            precio,
+            descuento: { valor: descuento, fechaExpiracion },
+            categoria,
+            color,
+            stock,
+            comentarios: [],
+            idUsuario: req.usuario._id,
+        });
+
+        expect(productoMock.save).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Producto creado',
+            producto: productoMock,
+        });
+    });
+
+    test('should not create a product if user is not admin', async () => {
+        const req = {
+            body: {
+                nombre: 'Alfombra cognitiva',
+                urlImagen: 'url1',
+                descripcion: 'Alfombra cognitiva descripcion',
+                precio: 100,
+                descuento: 10,
+                fechaExpiracion: '2025-01-25',
+                categoria: 'perro',
+                color: 'verde',
+                stock: 10,
+            },
+            usuario: { // usuario logueado no es admin
+                _id: '12345',
+                role: 'user',
+            },
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        await postCrearProducto(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'No tiene rol de admin.',
+        });
+    });
+
 });
 
 

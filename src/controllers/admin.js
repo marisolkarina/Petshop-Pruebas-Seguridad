@@ -4,7 +4,6 @@ const Usuario = require('../models/usuario');
 
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const file = require('../utils/file');
 
 
 //Administracion de Productos
