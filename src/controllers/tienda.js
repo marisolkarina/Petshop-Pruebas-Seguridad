@@ -160,8 +160,28 @@ exports.postProductoPalabra = (req, res) => {
         }).catch((err) => {
             res.status(500).json({ message: err.message });
         });
-
 }
+
+
+//Detalles de mi cuenta
+//      localhost:3000/detalles-cuenta/:tokenLogin
+exports.getDetallesCuenta = (req, res) => {
+    //enviamos el token de login en la url
+    const { tokenLogin } = req.query;
+    
+    Usuario.findOne({
+        _id: req.usuario._id,
+        tokenLogin: tokenLogin
+    })
+        .then((usuario) => {
+            if (!usuario) return res.status(422).json({ message: 'Token de inicio de sesion inválido o ha expirado.'});
+            res.status(200).json({ message: 'Detalles de la cuenta', usuario: usuario });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: err.message });
+        });
+}
+
 
 //comentarios acerca del producto
 
@@ -397,23 +417,6 @@ exports.getPromociones = (req, res, next) => {
         });
 }
 
-//Detalles de mi cuenta
-exports.getDetallesCuenta = (req, res, next) => {
-    Usuario.findById(req.usuario._id)
-        .then((usuario) => {
-            res.render('user/detalles-cuenta', {
-                path: '/detalles-cuenta',
-                titulo: 'Mi Cuenta',
-                usuario: usuario,
-                autenticado: req.session.autenticado
-            })
-        })
-        .catch((err) => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-        });
-}
 
 exports.getComprobante = (req, res, next) => {
     const idPedido = req.params.idPedido;

@@ -9,6 +9,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const Usuario = require('./models/usuario');
 const session = require('express-session');
+// const cookieParser = require('cookie-parser');
 
 const MongoDBStore = require('connect-mongodb-session')(session);
 
@@ -68,6 +69,7 @@ app.use('/imagenes', express.static(path.join(__dirname, 'imagenes')));
 
 app.use('/utils', express.static(path.join(__dirname, 'utils')));
 app.use(express.static(path.join('node_modules', 'bootstrap', 'dist')));
+// app.use(cookieParser());
 app.use(session({ secret: 'algo muy secreto', resave: false, saveUninitialized: false, store: store }));
 
 // app.use(csrfProtection);

@@ -5,9 +5,7 @@ const { validationResult } = require('express-validator');
 
 const nodemailer = require('nodemailer');
 const sendgridTransport = require('nodemailer-sendgrid-transport');
-
 const APIKEY = '';
-
 const transporter = nodemailer.createTransport(
     sendgridTransport({
         auth: {
@@ -16,6 +14,9 @@ const transporter = nodemailer.createTransport(
         }
     })
 );
+
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'secretkey';
 
 // LOGIN
 
@@ -39,7 +40,7 @@ exports.postLogin = (req, res) => {
                     message: 'Email o contraseña invalido'
                 });
             }
-
+            //encriptando password
             bcrypt.compare(password, usuario.password)
                 .then((doMatch) => {
                     if (!doMatch) {
@@ -48,13 +49,31 @@ exports.postLogin = (req, res) => {
                         });
                     }
 
+                    const tokenLogin = jwt.sign(
+                        {
+                            _id: usuario._id,
+                            nombre: usuario.nombre,
+                            dni: usuario.dni,
+                            email: usuario.email,
+                            password: usuario.password,
+                            role: usuario.role
+                        },
+                        SECRET_KEY,
+                        {
+                            expiresIn: '1h'
+                        }
+                    );
+                    usuario.tokenLogin = tokenLogin;
+                    usuario.save();//guardamos el tokenLogin en el usuario
+
                     req.session.autenticado = true;
                     req.session.usuario = usuario;
                     req.session.save((err) => {
                         if (err) console.log('Error al guardar la sesión:', err);
                     });
-                    res.status(200).json({message: 'Login exitoso'});
+                    res.status(200).json({message: 'Login exitoso', tokenLogin: tokenLogin});
                 });
+                
         })
         .catch((err) => {
             res.status(500).json({ message: err.message });
