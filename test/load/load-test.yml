@@ -1,0 +1,39 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60 # Duración de la prueba en segundos
+      arrivalRate: 10 # Solicitudes por segundo
+
+scenarios:
+  - flow:
+      # Prueba GET para la ruta /admin/productos
+      - get:
+          url: "/admin/productos"
+
+      # Prueba POST para la ruta /admin/crear-producto
+      - post:
+          url: "/admin/crear-producto"
+          json:
+            nombre: "Collar Azul"
+            precio: 29.99
+            color: "Azul"
+            categoria: "Accesorios"
+            descripcion: "Collar duradero para perros y gatos."
+            stock: 50
+
+      # Prueba DELETE para la ruta /admin/eliminar-producto/:idProducto
+      - delete:
+          url: "/admin/eliminar-producto/12345" # Usa un ID válido
+
+      # Prueba POST para la ruta /admin/crear-usuario
+      - post:
+          url: "/admin/crear-usuario"
+          json:
+            nombre: "Juan Pérez"
+            dni: "12345678"
+            email: "juan.perez@example.com"
+            password: "Contraseña123!"
+
+      # Prueba GET para la ruta /admin/pedidos
+      - get:
+          url: "/admin/pedidos"

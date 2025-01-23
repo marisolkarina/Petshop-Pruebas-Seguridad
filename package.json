@@ -7,7 +7,7 @@
     "start": "nodemon src/app.js",
     "test:unit": "jest test/unit",
     "test:integration": "mocha test/integration",
-    "test:load": "artillery run test/load/load-test.yml"
+    "test:load": "artillery run --output test/load/results.json test/load/load-test.yml"
   },
   "author": "marisol",
   "license": "ISC",
@@ -34,5 +34,9 @@
     "nodemailer": "^6.9.16",
     "nodemailer-sendgrid-transport": "^0.2.0",
     "pdfkit": "^0.15.1"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": []
 }
