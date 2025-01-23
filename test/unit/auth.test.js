@@ -12,6 +12,7 @@ jest.mock('nodemailer', () => ({
     })
 }));
 
+
 describe('Registro de Usuario', () => {
     let req, res;
 
@@ -132,3 +133,104 @@ describe('Registro de Usuario', () => {
         });
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+describe('Login de usuario', () => {
+    let req, res, mockUser;
+
+    beforeEach(() => {
+        // Simula el objeto `req` con una sesión
+        req = {
+            body: {
+                email: 'espinozaromero1999@gmail.com',
+                password: 'Usuario01!',
+            },
+            session: {
+                save: jest.fn((callback) => callback(null)), // Simula guardar la sesión sin errores
+                autenticado: false,
+                usuario: null,
+            },
+        };
+
+        res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+
+        validationResult.mockReturnValue({
+            isEmpty: () => true,
+            array: () => [],
+        });
+
+        mockUser = {
+            _id: 'userId123',
+            email: req.body.email,
+            nombre: 'Test User',
+            dni: '12345678',
+            password: 'hashedPassword',
+            role: 'user',
+            tokenLogin: null,
+            save: jest.fn().mockResolvedValue(true), // Simula que el save es exitoso
+        };
+    });
+
+    test('Debería iniciar sesión exitosamente con credenciales válidas', async () => {
+        Usuario.findOne = jest.fn().mockResolvedValue(mockUser);
+
+        bcrypt.compare = jest.fn().mockResolvedValue(true);
+
+        await loginController.postLogin(req, res);
+
+        expect(Usuario.findOne).toHaveBeenCalledWith({ email: req.body.email });
+        expect(bcrypt.compare).toHaveBeenCalledWith(req.body.password, mockUser.password);
+
+        expect(req.session.autenticado).toBe(true);
+        expect(req.session.usuario).toEqual({
+            _id: mockUser._id,
+            email: mockUser.email,
+            nombre: mockUser.nombre,
+            dni: mockUser.dni,
+            password: mockUser.password,
+            role: mockUser.role,
+            tokenLogin: expect.any(String), // Verifica que el token esté definido
+        });
+
+        expect(req.session.save).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Login exitoso',
+            tokenLogin: expect.any(String),
+    });
+});
+    test('Debería fallar con credenciales inválidas', async () => {
+        Usuario.findOne.mockResolvedValue(null);
+
+        await loginController.postLogin(req, res);
+
+        expect(Usuario.findOne).toHaveBeenCalledWith({ email: req.body.email });
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Email o contraseña inválido' });
+    });
+
+    test('Debería manejar errores inesperados', async () => {
+        Usuario.findOne.mockRejectedValue(new Error('Error inesperado'));
+
+        await loginController.postLogin(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Error inesperado' });
+    });
+});*/

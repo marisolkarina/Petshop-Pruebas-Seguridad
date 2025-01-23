@@ -22,6 +22,7 @@ const SECRET_KEY = 'secretkey';
 
 //      localhost:3000/login
 // Controlador para procesar el inicio de sesión
+
 exports.postLogin = (req, res) => {
     const { email, password } = req.body;
 
@@ -82,7 +83,7 @@ exports.postLogin = (req, res) => {
 
 
 //      localhost:3000/recuperar-contrasena
-// Controlador para manejar el envío del formulario de recuperación de contraseña
+// Controlador para manejar el envío del token para recuperación de contraseña
 exports.postRecuperarContrasena = (req, res) => {
     const {email} = req.body;
 
