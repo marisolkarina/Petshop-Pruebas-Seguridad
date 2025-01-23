@@ -23,6 +23,7 @@ const usuarioSchema = new Schema({
         type: String,
         required: true
     },
+    tokenLogin: String,
     tokenReinicio: String,
     expiracionTokenReinicio: Date,
     carrito: {
